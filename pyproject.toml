@@ -1,6 +1,5 @@
 [build-system]
 requires = [
-    "pyiron_base",
     "setuptools",
     "versioneer[toml]==0.29",
 ]
@@ -24,7 +23,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "pyiron_base==0.8.3"
 ]
 dynamic = [ "version",]
 authors = [
@@ -52,3 +50,8 @@ include = [ "pyiron_snippets*",]
 
 [tool.setuptools.dynamic.version]
 attr = "pyiron_snippets.__version__"
+
+[project.optional-dependencies]
+tests = [
+    "cloudpickle==3.0.0",
+]
