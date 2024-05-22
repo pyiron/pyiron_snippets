@@ -1,6 +1,6 @@
 import unittest
 
-from pyiron_workflow.snippets.dotdict import DotDict
+from pyiron_snippets.dotdict import DotDict
 
 
 class TestDotDict(unittest.TestCase):
