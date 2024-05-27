@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a bug report to help us eliminate issues and improve pyiron_snippets
+about: Create a bug report to help us eliminate issues and improve snippets
 title: ''
 labels: bug
 assignees: ''

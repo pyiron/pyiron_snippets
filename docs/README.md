@@ -1,4 +1,4 @@
-# pyiron_snippets
+# snippets
 
 This is a collection of independent python snippets used in the pyiron project, but hopefully useful elsewhere too.
 

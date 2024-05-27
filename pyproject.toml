@@ -6,8 +6,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyiron_snippets"
-description = "pyiron_snippets - Short, dependency-free python snippets."
+name = "snippets"
+description = "snippets - Short, dependency-free python snippets."
 readme = "docs/README.md"
 keywords = [ "pyiron",]
 requires-python = ">=3.9, <3.13"
@@ -35,21 +35,21 @@ file = "LICENSE"
 
 [project.urls]
 Homepage = "https://pyiron.org/"
-Documentation = "https://pyiron_snippets.readthedocs.io"
-Repository = "https://github.com/pyiron/pyiron_snippets"
+Documentation = "https://snippets.readthedocs.io"
+Repository = "https://github.com/pyiron/snippets"
 
 [tool.versioneer]
 VCS = "git"
 style = "pep440-pre"
-versionfile_source = "pyiron_snippets/_version.py"
-parentdir_prefix = "pyiron_snippets"
-tag_prefix = "pyiron_snippets-"
+versionfile_source = "snippets/_version.py"
+parentdir_prefix = "snippets"
+tag_prefix = "snippets-"
 
 [tool.setuptools.packages.find]
-include = [ "pyiron_snippets*",]
+include = [ "snippets*",]
 
 [tool.setuptools.dynamic.version]
-attr = "pyiron_snippets.__version__"
+attr = "snippets.__version__"
 
 [project.optional-dependencies]
 tests = [

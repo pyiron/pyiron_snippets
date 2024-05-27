@@ -1,20 +1,20 @@
 # pip install main
 pip install --no-deps .
-# Note: This produces build and pyiron_snippets.egg-info directories
+# Note: This produces build and snippets.egg-info directories
 
 # clean up
 if [ -d "notebooks" ]; then
     mv notebooks/* .
 fi
-if [ -d "${HOME}/pyiron_snippets" ]; then
+if [ -d "${HOME}/snippets" ]; then
     rm -r   ${HOME}/.binder \
             ${HOME}/.ci_support \
             ${HOME}/.github \
             ${HOME}/build \
             ${HOME}/docs \
             ${HOME}/notebooks \
-            ${HOME}/pyiron_snippets \
-            ${HOME}/pyiron_snippets.egg-info \
+            ${HOME}/snippets \
+            ${HOME}/snippets.egg-info \
             ${HOME}/tests \
             ${HOME}/.gitattributes \
             ${HOME}/.gitignore \

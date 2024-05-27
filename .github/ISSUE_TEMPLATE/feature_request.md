@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Make a suggestion for a new feature or a change to pyiron_snippets
+about: Make a suggestion for a new feature or a change to snippets
 title: ''
 labels: enhancement
 assignees: ''
@@ -13,7 +13,7 @@ assignees: ''
 
 **Detailed Description**
 
-<!--Please explain how you would like to see pyiron_snippets enhanced, what feature(s) you are looking for, what specific problems this will solve.-->
+<!--Please explain how you would like to see snippets enhanced, what feature(s) you are looking for, what specific problems this will solve.-->
 
 **Further Information, Files, and Links**
 
