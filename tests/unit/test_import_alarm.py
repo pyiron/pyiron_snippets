@@ -34,10 +34,6 @@ class TestImportAlarm(unittest.TestCase):
             subtract_one(0)
 
     def test_context(self):
-        """
-        Usage via context manager should give same results and not suppress other
-        errors.
-        """
         with ImportAlarm(
             "Working import",
             _fail_on_warning=True
