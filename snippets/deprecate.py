@@ -1,27 +1,11 @@
-# coding: utf-8
-# Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
-# Distributed under the terms of "New BSD License", see the LICENSE file.
-
 """
-Utility functions used in pyiron.
-In order to be accessible from anywhere in pyiron, they *must* remain free of any imports from pyiron!
+A utility  class for deprecating code.
 """
 
 from copy import copy
 import functools
 import types
 import warnings
-
-__author__ = "Joerg Neugebauer, Jan Janssen"
-__copyright__ = (
-    "Copyright 2020, Max-Planck-Institut für Eisenforschung GmbH - "
-    "Computational Materials Design (CM) Department"
-)
-__version__ = "1.0"
-__maintainer__ = "Jan Janssen"
-__email__ = "janssen@mpie.de"
-__status__ = "production"
-__date__ = "Sep 1, 2017"
 
 
 class Deprecator:
@@ -68,9 +52,10 @@ class Deprecator:
     DeprecationWarning: __main__.foo is deprecated: pyiron says no!  It is not
     guaranteed to be in service in vers. 0.5.0
 
-    Alternatively the decorator can also be called with `arguments` set to a dictionary mapping names of keyword
-    arguments to deprecation messages.  In this case the warning will only be emitted when the decorated function is
-    called with arguments in that dictionary.
+    Alternatively the decorator can also be called with `arguments` set to a dictionary
+    mapping names of keyword arguments to deprecation messages.  In this case the
+    warning will only be emitted when the decorated function is called with arguments
+    in that dictionary.
 
     >>> deprecate = Deprecator()
     >>> @deprecate(arguments={"bar": "use baz instead."})
@@ -80,8 +65,8 @@ class Deprecator:
     >>> foo(bar=True)
     DeprecationWarning: __main__.foo(bar=True) is deprecated: use baz instead.
 
-    As a short cut, it is also possible to pass the values in the arguments dict directly as keyword arguments to the
-    decorator.
+    As a short-cut, it is also possible to pass the values in the arguments dict
+    directly as keyword arguments to the decorator.
 
     >>> @deprecate(bar="use baz instead.")
     ... def foo(bar=None, baz=None):
@@ -98,8 +83,8 @@ class Deprecator:
         Args:
             message (str): default deprecation message
             version (str): default version after which the function might be removed
-            pending (bool): only warn about future deprecation, warning category will be PendingDeprecationWarning
-                instead of DeprecationWarning
+            pending (bool): only warn about future deprecation, warning category will
+            be PendingDeprecationWarning instead of DeprecationWarning
         """
         self.message = message
         self.version = version
@@ -175,8 +160,9 @@ class Deprecator:
 
     def wrap(self, function):
         """
-        Wrap the given function to emit a DeprecationWarning at call time.  The warning message is constructed from the
-        given message and version.  If :attr:`.arguments` is set then the warning is only emitted, when the decorated
+        Wrap the given function to emit a DeprecationWarning at call time.  The warning
+        message is constructed from the given message and version.  If
+        :attr:`.arguments` is set then the warning is only emitted, when the decorated
         function is called with keyword arguments found in that dictionary.
 
         Args:
