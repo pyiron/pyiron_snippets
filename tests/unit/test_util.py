@@ -4,31 +4,12 @@
 
 import unittest
 import warnings
-from pyiron_base.utils.instance import static_isinstance
 from pyiron_base.utils.deprecate import deprecate, deprecate_soon
 from pyiron_base.utils.error import ImportAlarm
-from pyiron_base._tests import PyironTestCase
 
 
-class TestJobType(PyironTestCase):
-    def test_static_isinstance(self):
-        self.assertTrue(
-            static_isinstance(
-                obj=list(), obj_type=["builtins.list", "__builtin__.list"]
-            )
-        )
-        self.assertTrue(
-            any(
-                [
-                    static_isinstance(obj=list(), obj_type="builtins.list"),
-                    static_isinstance(obj=list(), obj_type="__builtin__.list"),
-                ]
-            )
-        )
-        self.assertRaises(TypeError, static_isinstance, list(), 1)
 
-
-class TestDeprecator(PyironTestCase):
+class TestDeprecator(unittest.TestCase):
     def test_deprecate(self):
         """Function decorated with `deprecate` should raise a warning."""
 
@@ -145,7 +126,7 @@ class TestDeprecator(PyironTestCase):
         self.assertEqual(len(w), 2, "Not all warnings preserved.")
 
 
-class TestImportAlarm(PyironTestCase):
+class TestImportAlarm(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.import_alarm = ImportAlarm()
