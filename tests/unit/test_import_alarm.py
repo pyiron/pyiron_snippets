@@ -1,10 +1,6 @@
-# coding: utf-8
-# Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
-# Distributed under the terms of "New BSD License", see the LICENSE file.
-
 import unittest
 import warnings
-from pyiron_base.utils.error import ImportAlarm
+from snippets.import_alarm import ImportAlarm
 
 
 class TestImportAlarm(unittest.TestCase):
@@ -52,7 +48,8 @@ class TestImportAlarm(unittest.TestCase):
 
     def test_context(self):
         """
-        Usage via context manager should give same results and not suppress other errors.
+        Usage via context manager should give same results and not suppress other
+        errors.
         """
 
         with warnings.catch_warnings(record=True) as w:
