@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from pyiron_base import deprecate, deprecate_soon
+from snippets.deprecate import deprecate, deprecate_soon
 
 
 class TestDeprecator(unittest.TestCase):
@@ -80,7 +80,10 @@ class TestDeprecator(unittest.TestCase):
         )
 
     def test_deprecate_kwargs(self):
-        """DeprecationWarning should only be raised when the given arguments occur, also when given via kwargs."""
+        """
+        DeprecationWarning should only be raised when the given arguments occur, also
+        when given via kwargs.
+        """
 
         @deprecate(bar="use baz instead")
         def foo(a, bar=None, baz=None):
@@ -105,7 +108,9 @@ class TestDeprecator(unittest.TestCase):
         )
 
     def test_instances(self):
-        """Subsequent calls to a Deprecator instance must not interfere with each other."""
+        """
+        Subsequent calls to a Deprecator instance must not interfere with each other.
+        """
 
         @deprecate(bar="use baz instead")
         def foo(bar=None, baz=None):
@@ -119,3 +124,7 @@ class TestDeprecator(unittest.TestCase):
             foo(bar=True)
             food(baz=True)
         self.assertEqual(len(w), 2, "Not all warnings preserved.")
+
+
+if __name__ == "__main__":
+    unittest.main()
