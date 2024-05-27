@@ -1,6 +1,6 @@
 import unittest
 
-from pyiron_base.utils.error import retry
+from snippets.retry import retry
 
 
 class TestRetry(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestRetry(unittest.TestCase):
             retry(func, error=TypeError, msg="")
 
     def test_exception(self):
-        """retry should catch explicitely passed exceptions."""
+        """retry should catch explicitly passed exceptions."""
 
         class Func:
             """Small helper to simulate a stateful function."""
@@ -54,3 +54,7 @@ class TestRetry(unittest.TestCase):
             ValueError, msg="retry did re-raise exception after insufficient tries!"
         ):
             retry(func, error=ValueError, msg="", at_most=2, delay=1e-6)
+
+
+if __name__ == "__main__":
+    unittest.main()
