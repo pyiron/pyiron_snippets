@@ -7,7 +7,7 @@ import unittest
 
 import cloudpickle
 
-from pyiron_snippets.factory import (
+from snippets.factory import (
     _ClassFactory,
     _FactoryMade,
     ClassFactory,

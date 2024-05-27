@@ -1,5 +1,5 @@
 import unittest
-from pyiron_snippets.singleton import Singleton
+from snippets.singleton import Singleton
 
 
 class TestSingleton(unittest.TestCase):
