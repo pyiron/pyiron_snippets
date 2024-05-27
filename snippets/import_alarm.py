@@ -6,6 +6,10 @@ import functools
 import warnings
 
 
+class ImportAlarmError(ImportError):
+    """To be raised in addition to warning under test conditions"""
+
+
 class ImportAlarm:
     """
     This class allows you to fail gracefully when some object has optional dependencies
@@ -41,7 +45,7 @@ class ImportAlarm:
     >>> import_alarm.warn_if_failed()
     """
 
-    def __init__(self, message=None):
+    def __init__(self, message=None, _fail_on_warning: bool = False):
         """
         Initialize message value.
 
@@ -51,6 +55,9 @@ class ImportAlarm:
             error.)
         """
         self.message = message
+        # Catching warnings in tests can be janky, so instead open a flag for failing
+        # instead.
+        self._fail_on_warning = _fail_on_warning
 
     def __call__(self, func):
         return self.wrapper(func)
@@ -71,6 +78,8 @@ class ImportAlarm:
         """
         if self.message is not None:
             warnings.warn(self.message, category=ImportWarning)
+            if self._fail_on_warning:
+                raise ImportAlarmError(self.message)
 
     def __enter__(self):
         return self

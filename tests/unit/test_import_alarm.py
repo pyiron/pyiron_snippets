@@ -1,71 +1,87 @@
 import unittest
 import warnings
-from snippets.import_alarm import ImportAlarm
+from snippets.import_alarm import ImportAlarm, ImportAlarmError
 
 
 class TestImportAlarm(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.import_alarm = ImportAlarm()
+        self.no_alarm = ImportAlarm(_fail_on_warning=True)
 
-        @self.import_alarm
+        @self.no_alarm
         def add_one(x):
             return x + 1
 
-        with ImportAlarm("Broken import") as alarm_broken:
+        self.yes_alarm = ImportAlarm(
+            "Here is a message",
+            _fail_on_warning=True
+        )
+
+        @self.yes_alarm
+        def subtract_one(x):
+            return x + 1
+
+        with ImportAlarm(
+            "Working import",
+            _fail_on_warning=True
+        ) as alarm_working:
+            # Suppose all the imports here pass fine
             pass
 
-        @alarm_broken
+        with ImportAlarm(
+            "Broken import",
+            _fail_on_warning=True
+        ) as alarm_broken:
+            raise ImportError("Suppose a package imported here is not available")
+
+        @alarm_working
         def add_two(x):
             return x + 2
 
-        with ImportAlarm("Working import") as alarm_working:
-            pass
-
-        @alarm_working
+        @alarm_broken
         def add_three(x):
             return x + 3
 
         self.add_one = add_one
+        self.subtract_one = subtract_one
         self.add_two = add_two
         self.add_three = add_three
 
-    def test_no_warning(self):
-        with warnings.catch_warnings(record=True) as w:
-            self.add_one(0)
+    def test_instance(self):
         self.assertEqual(
-            len(w), 0, "Expected no warnings, but got {} warnings.".format(len(w))
+            1,
+            self.add_one(0),
+            msg="Without a message, the import alarm should not raise a warning (an "
+                "exception in this case, because of the private flag)"
         )
-
-    def test_has_warning(self):
-        self.import_alarm.message = "Now add_one should throw an ImportWarning"
-
-        with warnings.catch_warnings(record=True) as w:
-            self.add_one(1)
-        self.assertEqual(
-            len(w), 1, "Expected one warning, but got {} warnings.".format(len(w))
-        )
+        with self.assertRaises(
+            ImportAlarmError,
+            msg="With a message, the import alarm should raise a warning. (an "
+                "exception in this case, because of the private flag)"
+        ):
+            self.subtract_one(0)
 
     def test_context(self):
         """
         Usage via context manager should give same results and not suppress other
         errors.
         """
-
-        with warnings.catch_warnings(record=True) as w:
-            self.add_two(0)
         self.assertEqual(
-            len(w), 1, "Expected one warning, but got {} warnings.".format(len(w))
-        )
-
-        with warnings.catch_warnings(record=True) as w:
-            self.add_three(0)
-        self.assertEqual(
-            len(w), 0, "Expected one warning, but got {} warnings.".format(len(w))
+            2,
+            self.add_two(0),
+            msg="Without a message, no warning (exception here) should be raised"
         )
 
         with self.assertRaises(
-            ZeroDivisionError, msg="Context manager should swallow unrelated exceptions"
+            ImportAlarmError,
+            msg="With a message, a warning (exception here) should be raised"
+        ):
+            self.add_three(0)
+
+    def test_scope(self):
+        with self.assertRaises(
+            ZeroDivisionError,
+            msg="Context manager should swallow unrelated exceptions"
         ), ImportAlarm("Unrelated"):
             print(1 / 0)
 
