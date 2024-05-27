@@ -1,5 +1,4 @@
 import unittest
-import warnings
 from snippets.import_alarm import ImportAlarm, ImportAlarmError
 
 
