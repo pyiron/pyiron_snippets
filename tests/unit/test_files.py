@@ -1,5 +1,5 @@
 import unittest
-from pyiron_snippets.files import DirectoryObject, FileObject
+from snippets.files import DirectoryObject, FileObject
 from pathlib import Path
 import platform
 

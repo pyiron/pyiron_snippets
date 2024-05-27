@@ -1,11 +1,11 @@
 import unittest
 
-import pyiron_snippets.has_post
+import snippets.has_post
 
 
 class TestHasPost(unittest.TestCase):
     def test_has_post_metaclass(self):
-        class Foo(metaclass=pyiron_snippets.has_post.HasPost):
+        class Foo(metaclass=snippets.has_post.HasPost):
             def __init__(self, x=0):
                 self.x = x
                 self.y = x

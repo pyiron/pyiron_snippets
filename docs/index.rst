@@ -1,4 +1,4 @@
-.. pyiron_snippets documentation master file
+.. snippets documentation master file
 
 .. _index:
 
