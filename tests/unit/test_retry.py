@@ -1,6 +1,6 @@
 import unittest
 
-from snippets.retry import retry
+from pyiron_snippets.retry import retry
 
 
 class TestRetry(unittest.TestCase):

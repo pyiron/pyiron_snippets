@@ -6,15 +6,15 @@ pip install --no-deps .
 if [ -d "notebooks" ]; then
     mv notebooks/* .
 fi
-if [ -d "${HOME}/snippets" ]; then
+if [ -d "${HOME}/pyiron_snippets" ]; then
     rm -r   ${HOME}/.binder \
             ${HOME}/.ci_support \
             ${HOME}/.github \
             ${HOME}/build \
             ${HOME}/docs \
             ${HOME}/notebooks \
-            ${HOME}/snippets \
-            ${HOME}/snippets.egg-info \
+            ${HOME}/pyiron_snippets \
+            ${HOME}/pyiron_snippets.egg-info \
             ${HOME}/tests \
             ${HOME}/.gitattributes \
             ${HOME}/.gitignore \

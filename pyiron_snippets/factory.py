@@ -366,7 +366,7 @@ def classfactory(
     Examples:
         >>> import pickle
         >>>
-        >>> from snippets.factory import classfactory
+        >>> from pyiron_snippets.factory import classfactory
         >>>
         >>> class HasN(ABC):
         ...     '''Some class I want to make dynamically subclass.'''

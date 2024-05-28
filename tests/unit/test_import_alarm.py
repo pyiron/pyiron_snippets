@@ -1,5 +1,5 @@
 import unittest
-from snippets.import_alarm import ImportAlarm, ImportAlarmError
+from pyiron_snippets.import_alarm import ImportAlarm, ImportAlarmError
 
 
 class TestImportAlarm(unittest.TestCase):

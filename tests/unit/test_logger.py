@@ -1,5 +1,5 @@
 import unittest
-from snippets.logger import logger
+from pyiron_snippets.logger import logger
 import os
 import shutil
 
