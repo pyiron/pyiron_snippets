@@ -34,7 +34,7 @@ authors = [
 file = "LICENSE"
 
 [project.urls]
-Homepage = "https://pyiron.org/"
+Homepage = "https://github.com/pyiron/snippets"
 Documentation = "https://pyiron-snippets.readthedocs.io"
 Repository = "https://github.com/pyiron/snippets"
 
