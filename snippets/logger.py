@@ -1,25 +1,9 @@
-# coding: utf-8
-# Copyright (c) Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department
-# Distributed under the terms of "New BSD License", see the LICENSE file.
-
-import logging
-from types import MethodType
-
-__author__ = "Joerg Neugebauer"
-__copyright__ = (
-    "Copyright 2021, Max-Planck-Institut für Eisenforschung GmbH - "
-    "Computational Materials Design (CM) Department"
-)
-__version__ = "1.0"
-__maintainer__ = "Jan Janssen"
-__email__ = "janssen@mpie.de"
-__status__ = "production"
-__date__ = "Sep 1, 2017"
-
-
 """
 Set the logging level for pyiron
 """
+
+import logging
+from types import MethodType
 
 
 def set_logging_level(self, level, channel=None):

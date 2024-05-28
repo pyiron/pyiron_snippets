@@ -3,7 +3,7 @@ Contributing to pyiron
 ======================
 
 The following is a set of guidelines for contributing to pyiron, which is
-hosted and maintained by the `Max Planck Institut für Eisenforschung`_
+hosted and maintained by the `Max Planck Institut für Nachhaltige Materialien`_
 on GitHub. These are mostly guidelines to facilitate an efficient
 development workflow, and not necessarily rules. Use your best judgment,
 and feel free to propose changes even to this document in a pull request.
@@ -373,7 +373,7 @@ On the other hand the tagged releases are available through conda-forge, as soon
 
 So for both conda and pip both the prereleases as well as the official releases are available.
 
-.. _Max Planck Institut für Eisenforschung: https://mpie.de
+.. _Max Planck Institut für Nachhaltige Materialien: https://mpie.de
 .. _github page: https://github.com/pyiron
 .. _issues page: https://github.com/pyiron/pyiron/issues
 .. _FAQ page: https://pyiron.readthedocs.io/en/latest/source/faq.html
