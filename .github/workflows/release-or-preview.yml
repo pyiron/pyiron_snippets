@@ -14,4 +14,4 @@ jobs:
     secrets: inherit
     with:
       semantic-upper-bound: 'minor'
-      publish-to-pypi: ${{ github.event_name == 'release' }} && ${{ github.event.action == 'published' }}
+      publish-to-pypi: ${{ github.event_name == 'release' && github.event.action == 'published' }}
