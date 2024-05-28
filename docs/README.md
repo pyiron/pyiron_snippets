@@ -1,9 +1,9 @@
-# snippets
-
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pyiron/snippets/HEAD)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Coverage Status](https://coveralls.io/repos/github/pyiron/pyiron_workflow/badge.svg?branch=main)](https://coveralls.io/github/pyiron/snippets?branch=main)
 [![Documentation Status](https://readthedocs.org/projects/pyiron-snippets/badge/?version=latest)](https://pyiron-snippets.readthedocs.io/en/latest/?badge=latest)
+
+# snippets
 
 This is a collection of independent python snippets which we in the pyiron project find generically useful.
 
