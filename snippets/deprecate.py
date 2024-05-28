@@ -49,7 +49,7 @@ class Deprecator:
     ... def foo(a, b):
     ...     pass
     >>> foo(1, 2)
-    DeprecationWarning: __main__.foo is deprecated: pyiron says no!  It is not
+    DeprecationWarning: __main__.foo is deprecated: I say no!  It is not
     guaranteed to be in service in vers. 0.5.0
 
     Alternatively the decorator can also be called with `arguments` set to a dictionary
