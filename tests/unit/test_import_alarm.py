@@ -73,7 +73,7 @@ class TestImportAlarm(unittest.TestCase):
     def test_scope(self):
         with self.assertRaises(
             ZeroDivisionError,
-            msg="Context manager should swallow unrelated exceptions"
+            msg="Context manager should not silence unrelated exceptions"
         ), ImportAlarm("Unrelated"):
             print(1 / 0)
 
