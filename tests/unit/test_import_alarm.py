@@ -20,12 +20,15 @@ class TestImportAlarm(unittest.TestCase):
         def subtract_one(x):
             return x + 1
 
-        self.assertEqual(
-            1,
-            add_one(0),
-            msg="Without a message, the import alarm should not raise a warning (an "
-                "exception in this case, because of the private flag)"
-        )
+        try:
+            self.assertEqual(
+                1,
+                add_one(0),
+                msg="Wrapped function should return the same return value."
+            )
+        except ImportAlarmError:
+            self.fail("Without a message, the import alarm should not raise a warning (an "
+                    "exception in this case, because of the private flag)")
         with self.assertRaises(
             ImportAlarmError,
             msg="With a message, the import alarm should raise a warning. (an "
