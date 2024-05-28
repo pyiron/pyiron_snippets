@@ -35,7 +35,7 @@ file = "LICENSE"
 
 [project.urls]
 Homepage = "https://pyiron.org/"
-Documentation = "https://snippets.readthedocs.io"
+Documentation = "https://pyiron-snippets.readthedocs.io"
 Repository = "https://github.com/pyiron/snippets"
 
 [tool.versioneer]
