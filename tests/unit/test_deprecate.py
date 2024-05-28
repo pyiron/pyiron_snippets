@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from snippets.deprecate import deprecate, deprecate_soon
+from pyiron_snippets.deprecate import deprecate, deprecate_soon
 
 
 class TestDeprecator(unittest.TestCase):

@@ -66,7 +66,7 @@ source_suffix = {
 master_doc = 'index'
 
 # General information about the project.
-project = u'snippets'
+project = u'pyiron_snippets'
 copyright = u'2024, Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department ' \
             u'All rights reserved'
 
@@ -244,7 +244,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'snippets.tex', u'pyiron_snippets Documentation',
+  ('index', 'pyiron_snippets.tex', u'pyiron_snippets Documentation',
    u'Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department', 'manual'),
 ]
 
@@ -275,8 +275,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index',
-     'snippets',
-     u'snippets Documentation',
+     'pyiron_snippets',
+     u'pyiron_snippets Documentation',
      [u'Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department'], 1)
 ]
 
@@ -291,10 +291,10 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index',
-   'snippets',
-   u'snippets Documentation',
+   'pyiron_snippets',
+   u'pyiron_snippets Documentation',
    u'Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department',
-   'snippets',
+   'pyiron_snippets',
    'One line description of project.',
    'Miscellaneous'),
 ]
@@ -311,7 +311,7 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
 
-main(['-e', '-o', 'apidoc', '../snippets', '--force'])
+main(['-e', '-o', 'apidoc', '../pyiron_snippets', '--force'])
 
 curdir = os.path.dirname(os.path.abspath(__file__))
 if os.path.exists(os.path.join(curdir, 'source/notebooks')):

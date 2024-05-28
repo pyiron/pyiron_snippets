@@ -1,5 +1,5 @@
 # .coveragerc to control coverage.py
 [run]
-source = snippets
-omit = snippets/_version.py
+source = pyiron_snippets
+omit = pyiron_snippets/_version.py
 concurrency = multiprocessing

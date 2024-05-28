@@ -35,7 +35,7 @@ def retry(
         logger (bool|object): Whether to pass a message to `warnings.warn` on each
             retry. (Default is True.) Optionally, an object with a :meth:`warn` method
             can be passed and the message will be sent there instead
-            (e.g. `snippets.logger.logger`).
+            (e.g. `pyiron_snippets.logger.logger`).
 
     Raises:
         `error`: if `at_most` is exceeded the last error is re-raised
