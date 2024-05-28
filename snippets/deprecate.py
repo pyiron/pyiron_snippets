@@ -44,7 +44,7 @@ class Deprecator:
     DeprecationWarning: __main__.foo is deprecated: use bar instead.  It is not
     guaranteed to be in service in vers. 0.4.0
 
-    >>> deprecate = Deprecator(message="pyiron says no!", version="0.5.0")
+    >>> deprecate = Deprecator(message="I say no!", version="0.5.0")
     >>> @deprecate
     ... def foo(a, b):
     ...     pass
