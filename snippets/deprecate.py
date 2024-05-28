@@ -166,7 +166,7 @@ class Deprecator:
         function is called with keyword arguments found in that dictionary.
 
         Args:
-            function (function): function to mark as deprecated
+            function (callable): function to mark as deprecated
 
         Return:
             function: raises DeprecationWarning when given function is called
