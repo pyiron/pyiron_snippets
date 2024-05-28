@@ -1,0 +1,17 @@
+# Dynamically updates the pyproject.toml for release to pypi
+# On PRs just lets you preview the new toml
+# On actual publication events, publishes to pypi
+name: Release (and/or preview)
+
+on:
+  pull_request:
+  release:
+    types: [ published ]
+
+jobs:
+  pyproject-flow:
+    uses: pyiron/actions/.github/workflows/pyproject-release.yml@actions-3.1.0
+    secrets: inherit
+    with:
+      semantic-upper-bound: 'minor'
+      publish-to-pypi: ${{ github.event_name == 'release' && github.event.action == 'published' }}
