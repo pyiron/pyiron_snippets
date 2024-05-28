@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'snippets'
-copyright = u'2021, Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department ' \
+copyright = u'2024, Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department ' \
             u'All rights reserved'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -245,7 +245,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'snippets.tex', u'pyiron_snippets Documentation',
-   u'Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department', 'manual'),
+   u'Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -277,7 +277,7 @@ man_pages = [
     ('index',
      'snippets',
      u'snippets Documentation',
-     [u'Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department'], 1)
+     [u'Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -293,7 +293,7 @@ texinfo_documents = [
   ('index',
    'snippets',
    u'snippets Documentation',
-   u'Max-Planck-Institut für Eisenforschung GmbH - Computational Materials Design (CM) Department',
+   u'Max-Planck-Institut für Nachhaltige Materialien GmbH - Computational Materials Design (CM) Department',
    'snippets',
    'One line description of project.',
    'Miscellaneous'),
