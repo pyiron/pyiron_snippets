@@ -3,6 +3,12 @@
 [![Coverage Status](https://coveralls.io/repos/github/pyiron/pyiron_snippets/badge.svg?branch=main)](https://coveralls.io/github/pyiron/pyiron_snippets?branch=main)
 [![Documentation Status](https://readthedocs.org/projects/pyiron-snippets/badge/?version=latest)](https://pyiron-snippets.readthedocs.io/en/latest/?badge=latest)
 
+[![Anaconda](https://anaconda.org/conda-forge/pyiron_snippets/badges/version.svg)](https://anaconda.org/conda-forge/pyiron_snippets)
+[![Last Updated](https://anaconda.org/conda-forge/pyiron_snippets/badges/latest_release_date.svg
+)](https://anaconda.org/conda-forge/pyiron_snippets)
+[![Platform](https://anaconda.org/conda-forge/pyiron_snippets/badges/platforms.svg)](https://anaconda.org/conda-forge/pyiron_snippets)
+[![Downloads](https://anaconda.org/conda-forge/pyiron_snippets/badges/downloads.svg)](https://anaconda.org/conda-forge/pyiron_snippets)
+
 # pyiron_snippets
 
 This is a collection of independent python snippets which we in the pyiron project find generically useful.
