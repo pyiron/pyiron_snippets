@@ -2,6 +2,8 @@
 
 """
 
+from __future__ import annotations
+
 from itertools import count
 import time
 from typing import Callable, Optional, Type, TypeVar, Tuple, Union
