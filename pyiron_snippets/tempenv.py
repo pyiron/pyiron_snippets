@@ -35,6 +35,6 @@ def TemporaryEnvironment(**kwargs):
     finally:
         for k, v in kwargs.items():
             if k in old_vars:
-                os.environ[k] = v
+                os.environ[k] = old_vars[k]
             else:
                 del os.environ[k]
