@@ -43,3 +43,4 @@ def TemporaryEnvironment(**kwargs):
                 os.environ[k] = old_vars[k]
             else:
                 del os.environ[k]
+
