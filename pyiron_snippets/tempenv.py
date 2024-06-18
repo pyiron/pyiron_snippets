@@ -1,15 +1,16 @@
 import os
 import contextlib
 
+
 @contextlib.contextmanager
 def TemporaryEnvironment(**kwargs):
     """
     Context manager for temporarily setting environment variables.
 
-    Takes any number of keyword arguments where the key is the environment 
+    Takes any number of keyword arguments where the key is the environment
     variable to set and the value is the value to set it to. For the duration
     of the context, the environment variables are set as per the provided arguments.
-    The original environment setting is restored once the context is exited, 
+    The original environment setting is restored once the context is exited,
     even if an exception is raised within the context.
 
     Non-string values are coerced with `str()`.
