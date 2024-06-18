@@ -1,6 +1,6 @@
 import os
 import unittest
-from pyiron_base.utils.tempenv import TemporaryEnvironment
+from pyiron_snippets.tempenv import TemporaryEnvironment
 
 class TestTemporaryEnvironment(unittest.TestCase):
     """
