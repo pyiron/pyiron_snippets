@@ -18,10 +18,14 @@ def TemporaryEnvironment(**kwargs):
 
     Examples:
 
+    >>> import os
     >>> with TemporaryEnvironment(PATH='/tmp', HOME='/', USER='foobar'):
     ...     print(os.getenv('PATH'))  # Outputs: /tmp
     ...     print(os.getenv('HOME'))  # Outputs: /
     ...     print(os.getenv('USER'))  # Outputs: foobar
+    /tmp
+    /
+    foobar
     """
     old_vars = {}
     for k, v in kwargs.items():
