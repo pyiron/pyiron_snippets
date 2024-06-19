@@ -30,8 +30,7 @@ class Deprecator:
     >>> @deprecate
     ... def foo(a, b):
     ...     pass
-    >>>
-    >>> foo(1, 2)
+    >>> foo(1, 2) # doctest: +SKIP
 
     Will issue the warning
     `DeprecationWarning: __main__.foo is deprecated`
@@ -39,7 +38,7 @@ class Deprecator:
     >>> @deprecate("use bar() instead")
     ... def foo(a, b):
     ...     pass
-    >>> foo(1, 2)
+    >>> foo(1, 2) # doctest: +SKIP
 
     Will issue the warning
     `DeprecationWarning: __main__.foo is deprecated: use bar instead`
@@ -47,7 +46,7 @@ class Deprecator:
     >>> @deprecate("use bar() instead", version="0.4.0")
     ... def foo(a, b):
     ...     pass
-    >>> foo(1, 2)
+    >>> foo(1, 2) # doctest: +SKIP
 
     Will issue the warning
     `DeprecationWarning: __main__.foo is deprecated: use bar instead.  It is not
@@ -57,7 +56,7 @@ class Deprecator:
     >>> @deprecate
     ... def foo(a, b):
     ...     pass
-    >>> foo(1, 2)
+    >>> foo(1, 2) # doctest: +SKIP
 
     Will issue the warning
     `DeprecationWarning: __main__.foo is deprecated: I say no!  It is not
@@ -73,7 +72,7 @@ class Deprecator:
     ... def foo(bar=None, baz=None):
     ...     pass
     >>> foo(baz=True)
-    >>> foo(bar=True)
+    >>> foo(bar=True) # doctest: +SKIP
 
     Will issue the warning
     `DeprecationWarning: __main__.foo(bar=True) is deprecated: use baz instead.`
@@ -85,7 +84,7 @@ class Deprecator:
     ... def foo(bar=None, baz=None):
     ...     pass
     >>> foo(baz=True)
-    >>> foo(bar=True)
+    >>> foo(bar=True) # doctest: +SKIP
 
     Will issue the warning
     `DeprecationWarning: __main__.foo(bar=True)  is deprecated: use baz instead.`
