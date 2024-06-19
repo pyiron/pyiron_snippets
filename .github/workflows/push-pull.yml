@@ -20,7 +20,8 @@ jobs:
             const issueNumber = context.payload.pull_request.number;
             const branchName = context.payload.pull_request.head.ref;
             const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${branchName}`;
-            const comment = `Here is the [source code for this branch](${repoUrl})`;
+            const relativeTarget = `notebooks/example.ipynb`;
+            const comment = `:robot: Here is the [source code for the example notebook on this branch](${repoUrl}/${relativeTarget})`;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
