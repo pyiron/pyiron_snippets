@@ -8,9 +8,22 @@ on:
   pull_request:
 
 jobs:
-  pyiron:
-    uses: pyiron/actions/.github/workflows/push-pull.yml@actions-3.1.0
-    secrets: inherit
-    with:
-      tests-env-files: .ci_support/environment.yml .ci_support/environment-tests.yml
-      do-benchmark-tests: false
+  comment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post a comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = context.payload.pull_request.number;
+            const branchName = context.payload.pull_request.head.ref;
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${branchName}`;
+            const comment = `Here is the [source code for this branch](${repoUrl})`;
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: repoUrl,
+            });
