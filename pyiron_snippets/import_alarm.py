@@ -20,15 +20,15 @@ class ImportAlarm:
     >>> try:
     ...     from mystery_package import Enigma, Puzzle, Conundrum
     ...     import_alarm = ImportAlarm()
-    >>> except ImportError:
-    >>>     import_alarm = ImportAlarm(
+    ... except ImportError:
+    ...     import_alarm = ImportAlarm(
     ...         "MysteryJob relies on mystery_package, but this was unavailable. Please ensure your python environment "
     ...         "has access to mystery_package, e.g. with `conda install -c conda-forge mystery_package`"
     ...     )
     ...
     >>> class MysteryJob:
     ...     @import_alarm
-    ...     def __init__(self, project, job_name)
+    ...     def __init__(self, project, job_name):
     ...         super().__init__()
     ...         self.riddles = [Enigma(), Puzzle(), Conundrum()]
 
