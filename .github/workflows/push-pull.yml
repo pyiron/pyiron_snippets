@@ -26,5 +26,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
-              body: repoUrl,
+              body: comment,
             });
