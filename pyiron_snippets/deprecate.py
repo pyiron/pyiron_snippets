@@ -31,36 +31,26 @@ class Deprecator:
     ... def foo(a, b):
     ...     pass
     >>> foo(1, 2) # doctest: +SKIP
-
-    Will issue the warning
-    `DeprecationWarning: __main__.foo is deprecated`
+    DeprecationWarning: __main__.foo is deprecated
 
     >>> @deprecate("use bar() instead")
     ... def foo(a, b):
     ...     pass
     >>> foo(1, 2) # doctest: +SKIP
-
-    Will issue the warning
-    `DeprecationWarning: __main__.foo is deprecated: use bar instead`
+    DeprecationWarning: __main__.foo is deprecated: use bar instead
 
     >>> @deprecate("use bar() instead", version="0.4.0")
     ... def foo(a, b):
     ...     pass
     >>> foo(1, 2) # doctest: +SKIP
-
-    Will issue the warning
-    `DeprecationWarning: __main__.foo is deprecated: use bar instead.  It is not
-    guaranteed to be in service in vers. 0.4.0`
+    DeprecationWarning: __main__.foo is deprecated: use bar instead.  It is not guaranteed to be in service in vers. 0.4.0
 
     >>> deprecate = Deprecator(message="I say no!", version="0.5.0")
     >>> @deprecate
     ... def foo(a, b):
     ...     pass
     >>> foo(1, 2) # doctest: +SKIP
-
-    Will issue the warning
-    `DeprecationWarning: __main__.foo is deprecated: I say no!  It is not
-    guaranteed to be in service in vers. 0.5.0`
+    DeprecationWarning: __main__.foo is deprecated: I say no!  It is not guaranteed to be in service in vers. 0.5.0`
 
     Alternatively the decorator can also be called with `arguments` set to a dictionary
     mapping names of keyword arguments to deprecation messages.  In this case the
@@ -73,9 +63,7 @@ class Deprecator:
     ...     pass
     >>> foo(baz=True)
     >>> foo(bar=True) # doctest: +SKIP
-
-    Will issue the warning
-    `DeprecationWarning: __main__.foo(bar=True) is deprecated: use baz instead.`
+    DeprecationWarning: __main__.foo(bar=True) is deprecated: use baz instead.
 
     As a short-cut, it is also possible to pass the values in the arguments dict
     directly as keyword arguments to the decorator.
@@ -85,9 +73,8 @@ class Deprecator:
     ...     pass
     >>> foo(baz=True)
     >>> foo(bar=True) # doctest: +SKIP
+    DeprecationWarning: __main__.foo(bar=True)  is deprecated: use baz instead.
 
-    Will issue the warning
-    `DeprecationWarning: __main__.foo(bar=True)  is deprecated: use baz instead.`
     """
 
     def __init__(self, message=None, version=None, pending=False):
