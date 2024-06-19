@@ -21,7 +21,7 @@ jobs:
             const branchName = context.payload.pull_request.head.ref;
             const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${branchName}`;
             const comment = `Here is the [source code for this branch](${repoUrl})`;
-            await github.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
