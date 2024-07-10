@@ -150,20 +150,13 @@ class ResourceResolver(AbstractResolver):
     Search results can be restricted by passing a (list of) globs.  If a list is given, entries matching at least one of
     them are returned.
 
-    >>> exe = ResourceResolver(..., "lammps")
-    >>> exe.list() # doctest: +SKIP
+    >>> res = ResourceResolver(..., "lammps")
+    >>> res.list() # doctest: +SKIP
     [
-        ('v1', '/my/resources/lammps/bin/run_lammps_v1.sh),
-        ('v1_mpi', '/my/resources/lammps/bin/run_lammps_v1_mpi.sh),
-        ('v2_default', '/my/resources/lammps/bin/run_lammps_v2_default.sh),
+        "bin",
+        "potentials",
+        "potentials.csv"
     ]
-    >>> exe.default_version # doctest: +SKIP
-    "v2_default"
-    >>> exe.dict("v1*") # doctest: +SKIP
-    {
-        'v1': '/my/resources/lammps/bin/run_lammps_v1.sh),
-        'v1_mpi': '/my/resources/lammps/bin/run_lammps_v1_mpi.sh)
-    }
     """
     __slots__ = "_resource_paths", "_module", "_subdirs"
     def __init__(self, resource_paths, module, *subdirs):
@@ -235,6 +228,14 @@ class ExecutableResolver(AbstractResolver):
             resource_paths,
             module, 'bin',
         )
+
+    def __repr__(self):
+        inner = repr(self._resolver._resource_paths)
+        inner += f", {repr(self._glob)}"
+        inner += f", {repr(self._resolver._module)}"
+        # recover suffix
+        inner += f", {repr(self._glob.split(".")[-1])}"
+        return f"{type(self).__name__}({inner})"
 
     def _search(self, name):
         seen = set()
