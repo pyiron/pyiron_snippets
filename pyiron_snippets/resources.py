@@ -223,8 +223,10 @@ class ExecutableResolver(AbstractResolver):
             resource_paths (list of str): base paths for resource locations
             code (str): name of the simulation code
             module (str): name of the module the code is part of, same as `code` by default
-            suffix (str): file ending; 'bat' on Windows 'sh' elsewhere
+            suffix (str, optional): file ending; if `None`, 'bat' on Windows 'sh' elsewhere
         """
+        if suffix is None:
+            suffix = EXE_SUFFIX
         if module is None:
             module = code
         self._regex = re.compile(f"run_{code}_(.*)\.{suffix}$")

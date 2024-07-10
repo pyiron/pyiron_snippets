@@ -52,17 +52,19 @@ class TestResolvers(unittest.TestCase):
         self.assertIs(resol, resol.chain(), "Empty chain does not return the same resolver!")
 
     def test_executable(self):
-        res = ExecutableResolver([self.res1], code="code1", module="module1")
-        self.assertNotIn("versionnonexec", res.available_versions,
-                      "ExecutableResolver must not list scripts that are not executable.")
-        self.assertNotIn("wrong_format", res.available_versions,
-                      "ExecutableResolver must not list scripts that do not follow the correct format.")
-        self.assertEqual("version1", res.default_version,
-                         "default version should be chosen in alphabetical order if not explicitly set.")
-        res = ExecutableResolver([self.res1], code="code2", module="module1")
-        self.assertEqual(res.default_version, "version2_default",
-                         "default version should be chosen as explicitly set.")
-        self.assertEqual(dict(res.search()), res.dict(), "dict not equal to search!")
+        for suffix in (None, "sh", "bat"):
+            with self.subTest(suffix=suffix):
+                res = ExecutableResolver([self.res1], code="code1", module="module1", suffix=suffix)
+                self.assertNotIn("versionnonexec", res.available_versions,
+                            "ExecutableResolver must not list scripts that are not executable.")
+                self.assertNotIn("wrong_format", res.available_versions,
+                            "ExecutableResolver must not list scripts that do not follow the correct format.")
+                self.assertEqual("version1", res.default_version,
+                                "default version should be chosen in alphabetical order if not explicitly set.")
+                res = ExecutableResolver([self.res1], code="code2", module="module1", suffix=suffix)
+                self.assertEqual(res.default_version, "version2_default",
+                                "default version should be chosen as explicitly set.")
+                self.assertEqual(dict(res.search()), res.dict(), "dict not equal to search!")
 
     def test_resource_resolver_subdirs(self):
         """Resolver constructor should take any additional args to search sub directories."""
@@ -71,7 +73,7 @@ class TestResolvers(unittest.TestCase):
             os.path.join(self.res1, "module1", "bin", path)
                 for path in ("run_code1_versionnonexec.sh", "run_code1_version1.sh", "run_code1_version2.sh")
         }
-        self.assertEqual(set(res.search("*code1*")), expected_results,
+        self.assertEqual(set(res.search("*code1*.sh")), expected_results,
                         "Search with subdirectories does not return all resources!")
 
     def test_resource_resolver_name_globs(self):
