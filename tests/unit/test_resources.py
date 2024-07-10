@@ -55,10 +55,12 @@ class TestResolvers(unittest.TestCase):
         for suffix in (None, "sh", "bat"):
             with self.subTest(suffix=suffix):
                 res = ExecutableResolver([self.res1], code="code1", module="module1", suffix=suffix)
-                self.assertNotIn("versionnonexec", res.available_versions,
-                            "ExecutableResolver must not list scripts that are not executable.")
+                if os.name != "nt":
+                    # no exec bits are present on windows it seems
+                    self.assertNotIn("versionnonexec", res.available_versions,
+                                     "ExecutableResolver must not list scripts that are not executable.")
                 self.assertNotIn("wrong_format", res.available_versions,
-                            "ExecutableResolver must not list scripts that do not follow the correct format.")
+                                 "ExecutableResolver must not list scripts that do not follow the correct format.")
                 self.assertEqual("version1", res.default_version,
                                 "default version should be chosen in alphabetical order if not explicitly set.")
                 res = ExecutableResolver([self.res1], code="code2", module="module1", suffix=suffix)
