@@ -222,7 +222,7 @@ class ExecutableResolver(AbstractResolver):
             suffix = EXE_SUFFIX
         if module is None:
             module = code
-        self._regex = re.compile(f"run_{code}_(.*)\.{suffix}$")
+        self._regex = re.compile(f"run_{code}_(.*)\\.{suffix}$")
         self._glob = f'run_{code}_*.{suffix}'
         self._resolver = ResourceResolver(
             resource_paths,
