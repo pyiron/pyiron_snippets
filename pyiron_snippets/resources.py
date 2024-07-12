@@ -234,7 +234,7 @@ class ExecutableResolver(AbstractResolver):
         inner += f", {repr(self._glob)}"
         inner += f", {repr(self._resolver._module)}"
         # recover suffix
-        inner += f", {repr(self._glob.split(".")[-1])}"
+        inner += f", {repr(self._glob.split('.')[-1])}"
         return f"{type(self).__name__}({inner})"
 
     def _search(self, name):
