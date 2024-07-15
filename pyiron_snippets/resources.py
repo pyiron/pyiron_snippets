@@ -1,6 +1,7 @@
 """
 Classes to find data files and executables in global paths.
 """
+
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Iterable
 import os
@@ -15,8 +16,10 @@ if os.name == "nt":
 else:
     EXE_SUFFIX = "sh"
 
+
 class ResourceNotFound(RuntimeError):
     pass
+
 
 class AbstractResolver(ABC):
     """
@@ -26,6 +29,7 @@ class AbstractResolver(ABC):
     type.  Implementations should pick a single type to yield, e.g. :class:`.ResourceResolver` always yields absolute
     paths, while :class:`.ExecutableResolver` always yields 2-tuples of a version tag and absolute paths.
     """
+
     @abstractmethod
     def _search(self, name: tuple[str]) -> Iterator[Any]:
         pass
@@ -122,7 +126,9 @@ class ResolverChain(AbstractResolver):
     """
     A chain of resolvers.  Matches are returned sequentially.
     """
+
     __slots__ = ("_resolvers",)
+
     def __init__(self, *resolvers):
         """
         Args:
@@ -136,7 +142,7 @@ class ResolverChain(AbstractResolver):
 
     def __repr__(self):
         inner = ", ".join(repr(r) for r in self._resolvers)
-        return f'{type(self).__name__}({inner})'
+        return f"{type(self).__name__}({inner})"
 
 
 class ResourceResolver(AbstractResolver):
@@ -158,7 +164,9 @@ class ResourceResolver(AbstractResolver):
         "potentials.csv"
     ]
     """
+
     __slots__ = "_resource_paths", "_module", "_subdirs"
+
     def __init__(self, resource_paths, module, *subdirs):
         """
         Args:
@@ -209,7 +217,9 @@ class ExecutableResolver(AbstractResolver):
         'v1_mpi': '/my/resources/lammps/bin/run_lammps_v1_mpi.sh)
     }
     """
+
     __slots__ = "_regex", "_resolver"
+
     def __init__(self, resource_paths, code, module=None, suffix=EXE_SUFFIX):
         """
         Args:
@@ -223,10 +233,11 @@ class ExecutableResolver(AbstractResolver):
         if module is None:
             module = code
         self._regex = re.compile(f"run_{code}_(.*)\\.{suffix}$")
-        self._glob = f'run_{code}_*.{suffix}'
+        self._glob = f"run_{code}_*.{suffix}"
         self._resolver = ResourceResolver(
             resource_paths,
-            module, 'bin',
+            module,
+            "bin",
         )
 
     def __repr__(self):
@@ -239,10 +250,14 @@ class ExecutableResolver(AbstractResolver):
 
     def _search(self, name):
         seen = set()
+
         def cond(path):
             isfile = os.path.isfile(path)
-            isexec = os.access(path, os.X_OK, effective_ids=os.access in os.supports_effective_ids)
+            isexec = os.access(
+                path, os.X_OK, effective_ids=os.access in os.supports_effective_ids
+            )
             return isfile and isexec
+
         for path in filter(cond, self._resolver.search(self._glob)):
             # we know that the regex has to match, because we constrain the resolver with the glob
             version = self._regex.search(path).group(1)
