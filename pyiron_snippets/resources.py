@@ -2,6 +2,8 @@
 Classes to find data files and executables in global paths.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Iterable
 import os
