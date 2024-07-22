@@ -2,6 +2,7 @@ import os
 import os.path
 import unittest
 from pyiron_snippets.resources import ResourceNotFound, ResourceResolver, ExecutableResolver
+from pyiron_snippets.logger import logger
 
 class TestResolvers(unittest.TestCase):
     """
@@ -55,6 +56,8 @@ class TestResolvers(unittest.TestCase):
         for suffix in (None, "sh", "bat"):
             with self.subTest(suffix=suffix):
                 res = ExecutableResolver([self.res1], code="code1", module="module1", suffix=suffix)
+                with self.assertLogs(logger, level="WARNING"):
+                    res.list()
                 if os.name != "nt":
                     # no exec bits are present on windows it seems
                     self.assertNotIn("versionnonexec", res.available_versions,

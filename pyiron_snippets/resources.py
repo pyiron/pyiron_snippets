@@ -256,6 +256,9 @@ class ExecutableResolver(AbstractResolver):
             isexec = os.access(
                 path, os.X_OK, effective_ids=os.access in os.supports_effective_ids
             )
+            if isfile and not isexec:
+                from pyiron_snippets.logger import logger
+                logger.warning(f"Found file '{path}', but skipping it because it is not executable!")
             return isfile and isexec
 
         for path in filter(cond, self._resolver.search(self._glob)):
