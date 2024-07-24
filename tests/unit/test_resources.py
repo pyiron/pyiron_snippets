@@ -1,7 +1,7 @@
 import os
 import os.path
 import unittest
-from pyiron_snippets.resources import ResourceNotFound, ResourceResolver, ExecutableResolver
+from pyiron_snippets.resources import ResourceNotFound, ResourceResolver, ExecutableResolver, ResolverWarning
 from pyiron_snippets.logger import logger
 
 class TestResolvers(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestResolvers(unittest.TestCase):
                 res = ExecutableResolver([self.res1], code="code1", module="module1", suffix=suffix)
                 # Windows always reports the exec bit as set, so skip those tests there
                 if os.name != "nt":
-                    with self.assertLogs(logger, level="WARNING"):
+                    with self.assertWarns(ResolverWarning):
                         res.list()
                     self.assertNotIn("versionnonexec", res.available_versions,
                                      "ExecutableResolver must not list scripts that are not executable.")
