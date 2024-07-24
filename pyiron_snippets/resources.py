@@ -12,6 +12,7 @@ from fnmatch import fnmatch
 from glob import glob
 import re
 from typing import Any
+import warnings
 
 if os.name == "nt":
     EXE_SUFFIX = "bat"
@@ -20,6 +21,10 @@ else:
 
 
 class ResourceNotFound(RuntimeError):
+    pass
+
+
+class ResolverWarning(RuntimeWarning):
     pass
 
 
@@ -204,6 +209,9 @@ class ExecutableResolver(AbstractResolver):
     and have the executable bit set. :meth:`.search` yields tuples of version strings and full paths to the executable
     instead of plain strings.
 
+    Except on windows results are filtered to make sure all returned scripts have the executable bit set.
+    When the bit is not set, a warning is printed.
+
     >>> exe = ExecutableResolver(..., "lammps")
     >>> exe.list() # doctest: +SKIP
     [
@@ -255,9 +263,18 @@ class ExecutableResolver(AbstractResolver):
 
         def cond(path):
             isfile = os.path.isfile(path)
+            # HINT: this is always True on windows
             isexec = os.access(
                 path, os.X_OK, effective_ids=os.access in os.supports_effective_ids
             )
+            if isfile and not isexec:
+                warnings.warn(
+                    f"Found file '{path}', but skipping it because it is not executable!",
+                    category=ResolverWarning,
+                    # TODO: maybe used from python3.12 onwards
+                    # skip_file_prefixes=(os.path.dirname(__file__),),
+                    stacklevel=4,
+                )
             return isfile and isexec
 
         for path in filter(cond, self._resolver.search(self._glob)):
