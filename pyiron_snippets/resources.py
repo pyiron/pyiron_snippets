@@ -21,8 +21,10 @@ else:
 class ResourceNotFound(RuntimeError):
     pass
 
+
 class ResolverWarning(RuntimeWarning):
     pass
+
 
 class AbstractResolver(ABC):
     """
