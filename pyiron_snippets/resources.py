@@ -10,6 +10,7 @@ from fnmatch import fnmatch
 from glob import glob
 import re
 from typing import Any
+import warnings
 
 if os.name == "nt":
     EXE_SUFFIX = "bat"
@@ -20,6 +21,8 @@ else:
 class ResourceNotFound(RuntimeError):
     pass
 
+class ResolverWarning(RuntimeWarning):
+    pass
 
 class AbstractResolver(ABC):
     """
@@ -261,10 +264,12 @@ class ExecutableResolver(AbstractResolver):
                 path, os.X_OK, effective_ids=os.access in os.supports_effective_ids
             )
             if isfile and not isexec:
-                from pyiron_snippets.logger import logger
-
-                logger.warning(
-                    f"Found file '{path}', but skipping it because it is not executable!"
+                warnings.warn(
+                    f"Found file '{path}', but skipping it because it is not executable!",
+                    category=ResolverWarning,
+                    # TODO: maybe used from python3.12 onwards
+                    # skip_file_prefixes=(os.path.dirname(__file__),),
+                    stacklevel=4,
                 )
             return isfile and isexec
 
