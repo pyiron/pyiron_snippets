@@ -2,7 +2,6 @@ import os
 import os.path
 import unittest
 from pyiron_snippets.resources import ResourceNotFound, ResourceResolver, ExecutableResolver, ResolverWarning
-from pyiron_snippets.logger import logger
 
 class TestResolvers(unittest.TestCase):
     """
