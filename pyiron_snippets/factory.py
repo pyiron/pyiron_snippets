@@ -275,7 +275,10 @@ class _FactoryMade(ABC):
                 ),
                 self.__getstate__(),
             )
-        elif self._reduce_imports_as is not None:
+        elif (
+            self._reduce_imports_as is not None and
+            "<locals>" not in self._reduce_imports_as[1]
+        ):
             return (
                 _instantiate_from_decorated,
                 (
