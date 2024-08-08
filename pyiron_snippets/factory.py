@@ -237,13 +237,15 @@ class _FactoryMade(ABC):
     """
     A mix-in to make class-factory-produced classes pickleable.
 
-    If the factory is used as a decorator for another function, it will conflict with
-    this function (i.e. the owned function will be the true function, and will mismatch
-    with imports from that location, which will return the post-decorator factory made
-    class). This can be resolved by setting the :attr:`_reduce_imports_as` attribute
-    to a tuple of the (module, qualname) obtained from the decorated definition (or,
-    -- DEPRECATED -- set :attr:`_class_returns_from_decorated_function` attribute to be
-    the decorated function in the decorator definition.)
+    If the factory is used as a decorator for another function (or class), it will
+    conflict with this function (i.e. the owned function will be the true function,
+    and will mismatch with imports from that location, which will return the
+    post-decorator factory made class). This can be resolved by setting the
+    :attr:`_reduce_imports_as` attribute to a tuple of the (module, qualname) obtained
+    from the decorated definition in order to manually specify where it should be
+    re-imported from. (DEPRECATED alternative: set
+    :attr:`_class_returns_from_decorated_function` attribute to be the decorated
+    function in the decorator definition.)
     """
 
     # DEPRECATED: Use _reduce_imports_as instead
