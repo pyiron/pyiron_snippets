@@ -240,12 +240,16 @@ class _FactoryMade(ABC):
     If the factory is used as a decorator for another function, it will conflict with
     this function (i.e. the owned function will be the true function, and will mismatch
     with imports from that location, which will return the post-decorator factory made
-    class). This can be resolved by setting the
-    :attr:`_class_returns_from_decorated_function` attribute to be the decorated
-    function in the decorator definition.
+    class). This can be resolved by setting the :attr:`_reduce_imports_as` attribute
+    to a tuple of the (module, qualname) obtained from the decorated definition (or,
+    -- DEPRECATED -- set :attr:`_class_returns_from_decorated_function` attribute to be
+    the decorated function in the decorator definition.)
     """
 
+    # DEPRECATED: Use _reduce_imports_as instead
     _class_returns_from_decorated_function: ClassVar[callable | None] = None
+
+    _reduce_imports_as: ClassVar[tuple[str, str] | None] = None
 
     def __init_subclass__(cls, /, class_factory, class_factory_args, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -267,6 +271,16 @@ class _FactoryMade(ABC):
                 (
                     self._class_returns_from_decorated_function.__module__,
                     self._class_returns_from_decorated_function.__qualname__,
+                    self.__getnewargs_ex__(),
+                ),
+                self.__getstate__(),
+            )
+        elif self._reduce_imports_as is not None:
+            return (
+                _instantiate_from_decorated,
+                (
+                    self._reduce_imports_as[0],
+                    self._reduce_imports_as[1],
                     self.__getnewargs_ex__(),
                 ),
                 self.__getstate__(),
