@@ -249,7 +249,7 @@ class _FactoryMade(ABC):
     # DEPRECATED: Use _reduce_imports_as instead
     _class_returns_from_decorated_function: ClassVar[callable | None] = None
 
-    _reduce_imports_as: ClassVar[tuple[str, str] | None] = None
+    _reduce_imports_as: ClassVar[tuple[str, str] | None] = None  # Module and qualname
 
     def __init_subclass__(cls, /, class_factory, class_factory_args, **kwargs):
         super().__init_subclass__(**kwargs)
