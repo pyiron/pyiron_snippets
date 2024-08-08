@@ -122,6 +122,20 @@ def adder_factory(fnc, n, /):
         {
             "fnc": staticmethod(fnc),
             "n": n,
+            "_reduce_imports_as": (fnc.__module__, fnc.__qualname__)
+        },
+        {},
+    )
+
+
+@classfactory
+def deprecated_adder_factory(fnc, n, /):
+    return (
+        f"{AddsNandX.__name__}{fnc.__name__}",
+        (AddsNandX,),
+        {
+            "fnc": staticmethod(fnc),
+            "n": n,
             "_class_returns_from_decorated_function": fnc
         },
         {},
@@ -131,13 +145,26 @@ def adder_factory(fnc, n, /):
 def add_to_this_decorator(n):
     def wrapped(fnc):
         factory_made = adder_factory(fnc, n)
-        factory_made._class_returns_from_decorated_function = fnc
+        factory_made._reduce_imports_as = (fnc.__module__, fnc.__qualname__)
         return factory_made
     return wrapped
 
 
 @add_to_this_decorator(5)
 def adds_5_plus_x(y: int):
+    return y
+
+
+def deprecated_add_to_this_decorator(n):
+    def wrapped(fnc):
+        factory_made = adder_factory(fnc, n)
+        factory_made._class_returns_from_decorated_function = fnc
+        return factory_made
+    return wrapped
+
+
+@deprecated_add_to_this_decorator(5)
+def deprecated_adds_5_plus_x(y: int):
     return y
 
 
@@ -474,21 +501,23 @@ class TestClassfactory(unittest.TestCase):
         In case the factory-produced class itself comes from a decorator, we need to
         check that name conflicts between the class and decorated function are handled.
         """
-        a5 = adds_5_plus_x(2)
-        self.assertIsInstance(a5, AddsNandX)
-        self.assertIsInstance(a5, _FactoryMade)
-        self.assertEqual(5, a5.n)
-        self.assertEqual(2, a5.x)
-        self.assertEqual(
-            1 + 5 + 2,  # y + n=5 + x=2
-            a5.add_to_function(1),
-            msg="Should execute the function as part of call"
-        )
+        for fnc in [adds_5_plus_x, deprecated_adds_5_plus_x]:
+            with self.subTest(fnc.__name__):
+                a5 = fnc(2)
+                self.assertIsInstance(a5, AddsNandX)
+                self.assertIsInstance(a5, _FactoryMade)
+                self.assertEqual(5, a5.n)
+                self.assertEqual(2, a5.x)
+                self.assertEqual(
+                    1 + 5 + 2,  # y + n=5 + x=2
+                    a5.add_to_function(1),
+                    msg="Should execute the function as part of call"
+                )
 
-        reloaded = pickle.loads(pickle.dumps(a5))
-        self.assertEqual(a5.n, reloaded.n)
-        self.assertIs(a5.fnc, reloaded.fnc)
-        self.assertEqual(a5.x, reloaded.x)
+                reloaded = pickle.loads(pickle.dumps(a5))
+                self.assertEqual(a5.n, reloaded.n)
+                self.assertIs(a5.fnc, reloaded.fnc)
+                self.assertEqual(a5.x, reloaded.x)
 
     def test_other_decorators_inside_locals(self):
         @add_to_this_decorator(6)
