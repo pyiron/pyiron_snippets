@@ -5,7 +5,7 @@ import shutil
 import sys
 
 # Determine the correct base class based on the platform
-BasePath = WindowsPath if sys.platform == 'win32' else PosixPath
+BasePath = WindowsPath if sys.platform == "win32" else PosixPath
 
 
 def delete_files_and_directories_recursively(path):
