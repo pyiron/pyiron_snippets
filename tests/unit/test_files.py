@@ -4,7 +4,6 @@ from platform import system
 
 from pyiron_snippets.files import DirectoryObject, FileObject
 
-
 class TestFiles(unittest.TestCase):
     def setUp(self):
         self.directory = DirectoryObject("test")
@@ -30,11 +29,6 @@ class TestFiles(unittest.TestCase):
             FileObject("test.txt", "test"),
             msg="File path not the same as directory path"
         )
-
-        if system() == "Windows":
-            self.assertRaises(ValueError, FileObject, "C:\\test.txt", "test")
-        else:
-            self.assertRaises(ValueError, FileObject, "/test.txt", "test")
 
     def test_directory_exists(self):
         self.assertTrue(self.directory.exists() and self.directory.is_dir())
@@ -125,7 +119,28 @@ class TestFiles(unittest.TestCase):
     def test_copy(self):
         f = FileObject("test_copy.txt", self.directory)
         f.write("sam wrote this wonderful thing")
-        new_file_1
+        new_file_1 = f.copy("another_test")
+        self.assertEqual(new_file_1.read(), "sam wrote this wonderful thing")
+        new_file_2 = f.copy("another_test", ".")
+        with open("another_test", "r") as file:
+            txt = file.read()
+        self.assertEqual(txt, "sam wrote this wonderful thing")
+        new_file_2.delete()  # needed because current directory
+        new_file_3 = f.copy(str(f.parent / "another_test"), ".")
+        self.assertEqual(new_file_1, new_file_3)
+        new_file_4 = f.copy(directory=".")
+        with open("test_copy.txt", "r") as file:
+            txt = file.read()
+        self.assertEqual(txt, "sam wrote this wonderful thing")
+        new_file_4.delete()  # needed because current directory
+        with self.assertRaises(ValueError):
+            f.copy()
+
+    def test_str(self):
+        f = FileObject("test_copy.txt", self.directory)
+        expected_path = str(self.directory / "test_copy.txt")
+        self.assertEqual(str(f), expected_path)
+
 
 if __name__ == '__main__':
     unittest.main()

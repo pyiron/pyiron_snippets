@@ -98,6 +98,8 @@ class FileObject(BasePath):
         if directory is None:
             full_path = Path(file_name)
         else:
+            if isinstance(directory, str):
+                directory = DirectoryObject(directory)
             full_path = directory.joinpath(file_name)
         instance = super().__new__(cls, full_path)
         return instance
@@ -111,7 +113,7 @@ class FileObject(BasePath):
             return f.read()
 
     def is_file(self):
-        return self.exists() and self.is_file()
+        return self.exists() and super().is_file()
 
     def delete(self):
         self.unlink()
@@ -131,8 +133,9 @@ class FileObject(BasePath):
 
         if directory is None:
             directory = self.parent
+        elif isinstance(directory, str):
+            directory = DirectoryObject(directory)
 
         new_file = directory.joinpath(new_file_name)
         shutil.copy(str(self), str(new_file))
         return FileObject(new_file_name, DirectoryObject(directory))
-
