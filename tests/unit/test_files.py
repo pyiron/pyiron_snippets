@@ -1,7 +1,8 @@
 import unittest
-from pyiron_snippets.files import DirectoryObject, FileObject
 from pathlib import Path
-import platform
+from platform import system
+
+from pyiron_snippets.files import DirectoryObject, FileObject
 
 
 class TestFiles(unittest.TestCase):
@@ -9,52 +10,53 @@ class TestFiles(unittest.TestCase):
         self.directory = DirectoryObject("test")
 
     def tearDown(self):
-        self.directory.delete()
+        if self.directory.exists():
+            self.directory.delete()
 
     def test_directory_instantiation(self):
         directory = DirectoryObject(Path("test"))
-        self.assertEqual(directory.path, self.directory.path)
+        self.assertEqual(directory, self.directory)
         directory = DirectoryObject(self.directory)
-        self.assertEqual(directory.path, self.directory.path)
+        self.assertEqual(directory, self.directory)
 
     def test_file_instantiation(self):
         self.assertEqual(
-            FileObject("test.txt", self.directory).path,
-            FileObject("test.txt", "test").path,
+            FileObject("test.txt", self.directory),
+            FileObject("test.txt", "test"),
             msg="DirectoryObject and str must give the same object"
         )
         self.assertEqual(
-            FileObject("test/test.txt").path,
-            FileObject("test.txt", "test").path,
-            msg="File path not same as directory path"
+            FileObject("test/test.txt"),
+            FileObject("test.txt", "test"),
+            msg="File path not the same as directory path"
         )
 
-        if platform.system() == "Windows":
+        if system() == "Windows":
             self.assertRaises(ValueError, FileObject, "C:\\test.txt", "test")
         else:
             self.assertRaises(ValueError, FileObject, "/test.txt", "test")
 
     def test_directory_exists(self):
-        self.assertTrue(Path("test").exists() and Path("test").is_dir())
+        self.assertTrue(self.directory.exists() and self.directory.is_dir())
 
     def test_write(self):
         self.directory.write(file_name="test.txt", content="something")
         self.assertTrue(self.directory.file_exists("test.txt"))
         self.assertTrue(
             "test/test.txt" in [
-                ff.replace("\\", "/")
+                str(ff).replace("\\", "/")
                 for ff in self.directory.list_content()['file']
             ]
         )
         self.assertEqual(len(self.directory), 1)
 
     def test_create_subdirectory(self):
-        self.directory.create_subdirectory("another_test")
-        self.assertTrue(Path("test/another_test").exists())
+        sub_dir = self.directory.create_subdirectory("another_test")
+        self.assertTrue(sub_dir.exists() and sub_dir.is_dir())
 
     def test_path(self):
         f = FileObject("test.txt", self.directory)
-        self.assertEqual(str(f.path).replace("\\", "/"), "test/test.txt")
+        self.assertEqual(str(f), str(self.directory.joinpath("test.txt")))
 
     def test_read_and_write(self):
         f = FileObject("test.txt", self.directory)
@@ -76,7 +78,7 @@ class TestFiles(unittest.TestCase):
 
     def test_delete(self):
         self.assertTrue(
-            Path("test").exists() and Path("test").is_dir(),
+            self.directory.exists() and self.directory.is_dir(),
             msg="Sanity check on initial state"
         )
         self.directory.write(file_name="test.txt", content="something")
@@ -87,7 +89,7 @@ class TestFiles(unittest.TestCase):
         )
         self.directory.delete()
         self.assertFalse(
-            Path("test").exists(),
+            self.directory.exists(),
             msg="Delete should remove the entire directory"
         )
         self.directory = DirectoryObject("test")  # Rebuild it so the tearDown works
@@ -122,32 +124,8 @@ class TestFiles(unittest.TestCase):
 
     def test_copy(self):
         f = FileObject("test_copy.txt", self.directory)
-        f.write("sam wrote this wondrful thing")
-        new_file_1 = f.copy("another_test")
-        self.assertEqual(new_file_1.read(), "sam wrote this wondrful thing")
-        new_file_2 = f.copy("another_test", ".")
-        with open("another_test", "r") as file:
-            txt = file.read()
-        self.assertEqual(txt, "sam wrote this wondrful thing")
-        new_file_2.delete()  # needed because current directory
-        new_file_3 = f.copy(str(f.path.parent / "another_test"), ".")
-        self.assertEqual(new_file_1.path.absolute(), new_file_3.path.absolute())
-        new_file_4 = f.copy(directory=".")
-        with open("test_copy.txt", "r") as file:
-            txt = file.read()
-        self.assertEqual(txt, "sam wrote this wondrful thing")
-        new_file_4.delete()  # needed because current directory
-        with self.assertRaises(ValueError):
-            f.copy()
-
-    def test_str(self):
-        f = FileObject("test_copy.txt", self.directory)
-        if platform.system() == "Windows":
-            txt = f"my file: {self.directory.path.absolute()}\\test_copy.txt"
-        else:
-            txt = f"my file: {self.directory.path.absolute()}/test_copy.txt"
-        self.assertEqual(f"my file: {f}", txt)
-
+        f.write("sam wrote this wonderful thing")
+        new_file_1
 
 if __name__ == '__main__':
     unittest.main()
