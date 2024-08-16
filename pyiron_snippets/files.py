@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PosixPath, WindowsPath
 import shutil
+import sys
+
+# Determine the correct base class based on the platform
+BasePath = WindowsPath if sys.platform == 'win32' else PosixPath
 
 
 def delete_files_and_directories_recursively(path):
@@ -38,78 +42,38 @@ def categorize_folder_items(folder_path):
     return results
 
 
-def _resolve_directory_and_path(
-    file_name: str,
-    directory: DirectoryObject | str | None = None,
-    default_directory: str = ".",
-):
-    """
-    Internal routine to separate the file name and the directory in case
-    file name is given in absolute path etc.
-    """
-    path = Path(file_name)
-    file_name = path.name
-    if path.is_absolute():
-        if directory is not None:
-            raise ValueError(
-                "You cannot set `directory` when `file_name` is an absolute path"
-            )
-        # If absolute path, take that of new_file_name regardless of the
-        # name of directory
-        directory = str(path.parent)
-    else:
-        if directory is None:
-            # If directory is not given, take default directory
-            directory = default_directory
-        else:
-            # If the directory is given, use it as the main path and append
-            # additional path if given in new_file_name
-            if isinstance(directory, DirectoryObject):
-                directory = directory.path
-        directory = directory / path.parent
-    if not isinstance(directory, DirectoryObject):
-        directory = DirectoryObject(directory)
-    return file_name, directory
-
-
-class DirectoryObject:
-    def __init__(self, directory: str | Path | DirectoryObject):
-        if isinstance(directory, str):
-            self.path = Path(directory)
-        elif isinstance(directory, Path):
-            self.path = directory
-        elif isinstance(directory, DirectoryObject):
-            self.path = directory.path
-        self.create()
+class DirectoryObject(BasePath):
+    def __new__(cls, *args, **kwargs):
+        # Create an instance of PosixPath or WindowsPath depending on the platform
+        instance = super().__new__(cls, *args, **kwargs)
+        instance.create()
+        return instance
 
     def create(self):
-        self.path.mkdir(parents=True, exist_ok=True)
+        self.mkdir(parents=True, exist_ok=True)
 
     def delete(self, only_if_empty: bool = False):
         if self.is_empty() or not only_if_empty:
-            delete_files_and_directories_recursively(self.path)
+            delete_files_and_directories_recursively(self)
 
     def list_content(self):
-        return categorize_folder_items(self.path)
+        return categorize_folder_items(self)
 
     def __len__(self):
         return sum([len(cc) for cc in self.list_content().values()])
 
     def __repr__(self):
-        return f"DirectoryObject(directory='{self.path}')\n{self.list_content()}"
-
-    def get_path(self, file_name):
-        return self.path / file_name
+        return f"DirectoryObject(directory='{self}')\n{self.list_content()}"
 
     def file_exists(self, file_name):
-        return self.get_path(file_name).is_file()
+        return self.joinpath(file_name).is_file()
 
     def write(self, file_name, content, mode="w"):
-        with self.get_path(file_name).open(mode=mode) as f:
+        with self.joinpath(file_name).open(mode=mode) as f:
             f.write(content)
 
     def create_subdirectory(self, path):
-        return DirectoryObject(self.path / path)
+        return DirectoryObject(self.joinpath(path))
 
     def create_file(self, file_name):
         return FileObject(file_name, self)
@@ -119,7 +83,7 @@ class DirectoryObject:
 
     def remove_files(self, *files: str):
         for file in files:
-            path = self.get_path(file)
+            path = self.joinpath(file)
             if path.is_file():
                 path.unlink()
 
@@ -128,90 +92,47 @@ class NoDestinationError(ValueError):
     """A custom error for when neither a new file name nor new location are provided"""
 
 
-class FileObject:
-    def __init__(self, file_name: str, directory: DirectoryObject = None):
-        self._file_name, self.directory = _resolve_directory_and_path(
-            file_name=file_name, directory=directory, default_directory="."
-        )
-
-    @property
-    def file_name(self):
-        return self._file_name
-
-    @property
-    def path(self):
-        return self.directory.path / Path(self._file_name)
+class FileObject(BasePath):
+    def __new__(cls, file_name: str, directory: DirectoryObject = None):
+        # Resolve the full path of the file
+        if directory is None:
+            full_path = Path(file_name)
+        else:
+            full_path = directory.joinpath(file_name)
+        instance = super().__new__(cls, full_path)
+        return instance
 
     def write(self, content, mode="x"):
-        self.directory.write(file_name=self.file_name, content=content, mode=mode)
+        with self.open(mode=mode) as f:
+            f.write(content)
 
     def read(self, mode="r"):
-        with open(self.path, mode=mode) as f:
+        with self.open(mode=mode) as f:
             return f.read()
 
     def is_file(self):
-        return self.directory.file_exists(self.file_name)
+        return self.exists() and self.is_file()
 
     def delete(self):
-        self.path.unlink()
-
-    def __str__(self):
-        return str(self.path.absolute())
-
-    def _resolve_directory_and_path(
-        self,
-        file_name: str,
-        directory: DirectoryObject | str | None = None,
-        default_directory: str = ".",
-    ):
-        """
-        Internal routine to separate the file name and the directory in case
-        file name is given in absolute path etc.
-        """
-        path = Path(file_name)
-        file_name = path.name
-        if path.is_absolute():
-            # If absolute path, take that of new_file_name regardless of the
-            # name of directory
-            directory = str(path.parent)
-        else:
-            if directory is None:
-                # If directory is not given, take default directory
-                directory = default_directory
-            else:
-                # If the directory is given, use it as the main path and append
-                # additional path if given in new_file_name
-                if isinstance(directory, DirectoryObject):
-                    directory = directory.path
-            directory = directory / path.parent
-        if not isinstance(directory, DirectoryObject):
-            directory = DirectoryObject(directory)
-        return file_name, directory
+        self.unlink()
 
     def copy(
         self,
         new_file_name: str | None = None,
         directory: DirectoryObject | str | None = None,
     ):
-        """
-        Copy an existing file to a new location.
-        Args:
-            new_file_name (str): New file name. You can also set
-                an absolute path (in which case `directory` will be ignored)
-            directory (DirectoryObject): Directory. If None, the same
-                directory is used
-        Returns:
-            (FileObject): file object of the new file
-        """
+        if new_file_name is None and directory is None:
+            raise NoDestinationError(
+                "Either new file name or directory must be specified"
+            )
+
         if new_file_name is None:
-            if directory is None:
-                raise NoDestinationError(
-                    "Either new file name or directory must be specified"
-                )
-            new_file_name = self.file_name
-        file_name, directory = self._resolve_directory_and_path(
-            new_file_name, directory, default_directory=self.directory.path
-        )
-        new_file = FileObject(file_name, directory.path)
-        shutil.copy(str(self.path), str(new_file.path))
-        return new_file
+            new_file_name = self.name
+
+        if directory is None:
+            directory = self.parent
+
+        new_file = directory.joinpath(new_file_name)
+        shutil.copy(str(self), str(new_file))
+        return FileObject(new_file_name, DirectoryObject(directory))
+
