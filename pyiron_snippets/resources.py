@@ -188,7 +188,8 @@ class ResourceResolver(AbstractResolver):
     def __repr__(self):
         inner = repr(self._resource_paths)
         inner += f", {repr(self._module)}"
-        inner += ", ".join(repr(s) for s in self._subdirs)
+        if len(self._subdirs) > 0:
+            inner += ", " + ", ".join(repr(s) for s in self._subdirs)
         return f"{type(self).__name__}({inner})"
 
     def _search(self, name):
