@@ -53,5 +53,5 @@ attr = "pyiron_snippets.__version__"
 
 [project.optional-dependencies]
 tests = [
-    "cloudpickle==3.1.0",
+    "cloudpickle==3.1.1",
 ]
