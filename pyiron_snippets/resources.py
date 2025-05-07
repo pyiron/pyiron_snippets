@@ -4,15 +4,15 @@ Classes to find data files and executables in global paths.
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from collections.abc import Iterator, Iterable
 import os
 import os.path
+import re
+import warnings
+from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
 from fnmatch import fnmatch
 from glob import glob
-import re
 from typing import Any
-import warnings
 
 if os.name == "nt":
     EXE_SUFFIX = "bat"

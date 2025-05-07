@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from abc import ABC
 import pickle
-from typing import ClassVar
 import unittest
+from abc import ABC
+from typing import ClassVar
 
 import cloudpickle
 
 from pyiron_snippets.factory import (
-    _ClassFactory,
-    _FactoryMade,
     ClassFactory,
-    classfactory,
     InvalidClassNameError,
     InvalidFactorySignature,
+    _ClassFactory,
+    _FactoryMade,
+    classfactory,
     sanitize_callable_name,
 )
 

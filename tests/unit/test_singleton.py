@@ -1,4 +1,5 @@
 import unittest
+
 from pyiron_snippets.singleton import Singleton
 
 

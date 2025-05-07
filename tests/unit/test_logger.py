@@ -1,7 +1,8 @@
-import unittest
-from pyiron_snippets.logger import logger
 import os
 import shutil
+import unittest
+
+from pyiron_snippets.logger import logger
 
 
 class TestLogger(unittest.TestCase):

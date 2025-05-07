@@ -1,11 +1,12 @@
 import os
 import os.path
 import unittest
+
 from pyiron_snippets.resources import (
-    ResourceNotFound,
-    ResourceResolver,
     ExecutableResolver,
     ResolverWarning,
+    ResourceNotFound,
+    ResourceResolver,
 )
 
 

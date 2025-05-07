@@ -1,7 +1,8 @@
-import unittest
-from pyiron_snippets.files import DirectoryObject, FileObject
-from pathlib import Path
 import platform
+import unittest
+from pathlib import Path
+
+from pyiron_snippets.files import DirectoryObject, FileObject
 
 
 class TestFiles(unittest.TestCase):
