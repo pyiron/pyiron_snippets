@@ -14,3 +14,6 @@ jobs:
     with:
       tests-env-files: .ci_support/environment.yml .ci_support/environment-tests.yml
       do-benchmark-tests: false
+      do-codecov: true
+      do-codacy: false
+      do-coveralls: false
