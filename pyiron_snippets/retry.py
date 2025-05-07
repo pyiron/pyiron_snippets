@@ -1,13 +1,9 @@
-"""
-
-"""
-
 from __future__ import annotations
 
-from itertools import count
 import time
-from typing import Callable, Optional, Type, TypeVar, Tuple, Union
 import warnings
+from itertools import count
+from typing import Callable, Optional, Tuple, Type, TypeVar, Union
 
 T = TypeVar("T")
 

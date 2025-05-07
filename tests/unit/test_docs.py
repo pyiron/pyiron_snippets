@@ -7,7 +7,7 @@ import pyiron_snippets
 
 def load_tests(loader, tests, ignore):
     for importer, name, ispkg in pkgutil.walk_packages(
-        pyiron_snippets.__path__, pyiron_snippets.__name__ + '.'
+        pyiron_snippets.__path__, pyiron_snippets.__name__ + "."
     ):
         tests.addTests(doctest.DocTestSuite(name))
     return tests
@@ -22,5 +22,5 @@ class TestTriggerFromIDE(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -32,11 +32,11 @@ Constructed classes can, in turn be used as bases in further class factories.
 
 from __future__ import annotations
 
+import pickle
 from abc import ABC, ABCMeta
 from functools import wraps
 from importlib import import_module
-from inspect import signature, Parameter
-import pickle
+from inspect import Parameter, signature
 from re import sub
 from typing import ClassVar
 
@@ -338,7 +338,7 @@ def _instantiate_from_decorated(module, qualname, newargs_ex):
 
 
 def classfactory(
-    factory_function: callable[..., tuple[str, tuple[type, ...], dict, dict]]
+    factory_function: callable[..., tuple[str, tuple[type, ...], dict, dict]],
 ) -> _ClassFactory:
     """
     A decorator for building dynamic class factories whose classes are unique and whose

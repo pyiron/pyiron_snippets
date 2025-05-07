@@ -1,4 +1,5 @@
 import unittest
+
 from pyiron_snippets.import_alarm import ImportAlarm, ImportAlarmError
 
 
@@ -11,10 +12,7 @@ class TestImportAlarm(unittest.TestCase):
         def add_one(x):
             return x + 1
 
-        yes_alarm = ImportAlarm(
-            "Here is a message",
-            _fail_on_warning=True
-        )
+        yes_alarm = ImportAlarm("Here is a message", _fail_on_warning=True)
 
         @yes_alarm
         def subtract_one(x):
@@ -24,30 +22,26 @@ class TestImportAlarm(unittest.TestCase):
             self.assertEqual(
                 1,
                 add_one(0),
-                msg="Wrapped function should return the same return value."
+                msg="Wrapped function should return the same return value.",
             )
         except ImportAlarmError:
-            self.fail("Without a message, the import alarm should not raise a warning (an "
-                    "exception in this case, because of the private flag)")
+            self.fail(
+                "Without a message, the import alarm should not raise a warning (an "
+                "exception in this case, because of the private flag)"
+            )
         with self.assertRaises(
             ImportAlarmError,
             msg="With a message, the import alarm should raise a warning. (an "
-                "exception in this case, because of the private flag)"
+            "exception in this case, because of the private flag)",
         ):
             subtract_one(0)
 
     def test_context(self):
-        with ImportAlarm(
-            "Working import",
-            _fail_on_warning=True
-        ) as alarm_working:
+        with ImportAlarm("Working import", _fail_on_warning=True) as alarm_working:
             # Suppose all the imports here pass fine
             pass
 
-        with ImportAlarm(
-            "Broken import",
-            _fail_on_warning=True
-        ) as alarm_broken:
+        with ImportAlarm("Broken import", _fail_on_warning=True) as alarm_broken:
             raise ImportError("Suppose a package imported here is not available")
 
         @alarm_working
@@ -61,20 +55,23 @@ class TestImportAlarm(unittest.TestCase):
         self.assertEqual(
             2,
             add_two(0),
-            msg="Without a message, no warning (exception here) should be raised"
+            msg="Without a message, no warning (exception here) should be raised",
         )
 
         with self.assertRaises(
             ImportAlarmError,
-            msg="With a message, a warning (exception here) should be raised"
+            msg="With a message, a warning (exception here) should be raised",
         ):
             add_three(0)
 
     def test_scope(self):
-        with self.assertRaises(
-            ZeroDivisionError,
-            msg="Context manager should not silence unrelated exceptions"
-        ), ImportAlarm("Unrelated"):
+        with (
+            self.assertRaises(
+                ZeroDivisionError,
+                msg="Context manager should not silence unrelated exceptions",
+            ),
+            ImportAlarm("Unrelated"),
+        ):
             print(1 / 0)
 
 
