@@ -17,3 +17,4 @@ jobs:
       do-codecov: true
       do-codacy: false
       do-coveralls: false
+      do-ruff-check: false
