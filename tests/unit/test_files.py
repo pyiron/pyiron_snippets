@@ -21,12 +21,12 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(
             FileObject("test.txt", self.directory).path,
             FileObject("test.txt", "test").path,
-            msg="DirectoryObject and str must give the same object"
+            msg="DirectoryObject and str must give the same object",
         )
         self.assertEqual(
             FileObject("test/test.txt").path,
             FileObject("test.txt", "test").path,
-            msg="File path not same as directory path"
+            msg="File path not same as directory path",
         )
 
         if platform.system() == "Windows":
@@ -41,10 +41,8 @@ class TestFiles(unittest.TestCase):
         self.directory.write(file_name="test.txt", content="something")
         self.assertTrue(self.directory.file_exists("test.txt"))
         self.assertTrue(
-            "test/test.txt" in [
-                ff.replace("\\", "/")
-                for ff in self.directory.list_content()['file']
-            ]
+            "test/test.txt"
+            in [ff.replace("\\", "/") for ff in self.directory.list_content()["file"]]
         )
         self.assertEqual(len(self.directory), 1)
 
@@ -77,18 +75,17 @@ class TestFiles(unittest.TestCase):
     def test_delete(self):
         self.assertTrue(
             Path("test").exists() and Path("test").is_dir(),
-            msg="Sanity check on initial state"
+            msg="Sanity check on initial state",
         )
         self.directory.write(file_name="test.txt", content="something")
         self.directory.delete(only_if_empty=True)
         self.assertFalse(
             self.directory.is_empty(),
-            msg="Flag argument on delete should have prevented removal"
+            msg="Flag argument on delete should have prevented removal",
         )
         self.directory.delete()
         self.assertFalse(
-            Path("test").exists(),
-            msg="Delete should remove the entire directory"
+            Path("test").exists(), msg="Delete should remove the entire directory"
         )
         self.directory = DirectoryObject("test")  # Rebuild it so the tearDown works
 
@@ -96,11 +93,7 @@ class TestFiles(unittest.TestCase):
         self.directory.write(file_name="test1.txt", content="something")
         self.directory.write(file_name="test2.txt", content="something")
         self.directory.write(file_name="test3.txt", content="something")
-        self.assertEqual(
-            3,
-            len(self.directory),
-            msg="Sanity check on initial state"
-        )
+        self.assertEqual(3, len(self.directory), msg="Sanity check on initial state")
         self.directory.remove_files("test1.txt", "test2.txt")
         self.assertEqual(
             1,
@@ -149,5 +142,5 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(f"my file: {f}", txt)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

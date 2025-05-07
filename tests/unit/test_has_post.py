@@ -26,16 +26,16 @@ class TestHasPost(unittest.TestCase):
         self.assertTupleEqual(
             (1, 0, 0),
             Foo().data,
-            msg="It should be fine to have this metaclass but not define post"
+            msg="It should be fine to have this metaclass but not define post",
         )
 
         self.assertTupleEqual(
             (1, 0, 2),
             Bar().data,
             msg="Metaclass should be inherited, able to use input, and happen _after_ "
-                "__init__"
+            "__init__",
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
