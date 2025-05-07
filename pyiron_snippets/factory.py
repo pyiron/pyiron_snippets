@@ -338,7 +338,7 @@ def _instantiate_from_decorated(module, qualname, newargs_ex):
 
 
 def classfactory(
-    factory_function: callable[..., tuple[str, tuple[type, ...], dict, dict]]
+    factory_function: callable[..., tuple[str, tuple[type, ...], dict, dict]],
 ) -> _ClassFactory:
     """
     A decorator for building dynamic class factories whose classes are unique and whose
