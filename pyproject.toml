@@ -55,3 +55,33 @@ attr = "pyiron_snippets.__version__"
 tests = [
     "cloudpickle==3.1.1",
 ]
+
+[tool.ruff]
+exclude = ["docs", "notebooks", "setup.py", "_version.py"]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = ["E501"] #ignore line-length violations
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Ignore unused imports in init files -- we specify APIs this way
+
+[tool.black]
+extend-exclude = '''
+(
+  ^/docs
+)
+'''

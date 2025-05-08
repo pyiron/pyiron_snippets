@@ -2,10 +2,10 @@
 A utility  class for deprecating code.
 """
 
-from copy import copy
 import functools
 import types
 import warnings
+from copy import copy
 
 
 class Deprecator:
