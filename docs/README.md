@@ -1,6 +1,6 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pyiron/pyiron_snippets/HEAD)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Coverage Status](https://coveralls.io/repos/github/pyiron/pyiron_snippets/badge.svg?branch=main)](https://coveralls.io/github/pyiron/pyiron_snippets?branch=main)
+[![Coverage Status](https://codecov.io/gh/pyiron/pyiron_snippets/graph/badge.svg)](https://codecov.io/gh/pyiron/pyiron_snippets)
 [![Documentation Status](https://readthedocs.org/projects/pyiron-snippets/badge/?version=latest)](https://pyiron-snippets.readthedocs.io/en/latest/?badge=latest)
 
 [![Anaconda](https://anaconda.org/conda-forge/pyiron_snippets/badges/version.svg)](https://anaconda.org/conda-forge/pyiron_snippets)
