@@ -10,7 +10,7 @@ on:
 
 jobs:
   pyproject-flow:
-    uses: pyiron/actions/.github/workflows/pyproject-release.yml@limit_coverage_env
+    uses: pyiron/actions/.github/workflows/pyproject-release.yml@actions-4.0.2
     secrets: inherit
     with:
       semantic-upper-bound: 'minor'
