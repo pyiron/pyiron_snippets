@@ -16,6 +16,8 @@ def delete_files_and_directories_recursively(path):
 
 
 def categorize_folder_items(folder_path):
+    if not folder_path.is_dir():
+        return {}
     types = [
         "dir",
         "file",
@@ -47,10 +49,15 @@ class DirectoryObject:
         elif isinstance(directory, DirectoryObject):
             self.path = directory.path
         self.create()
+        self._protected = False
 
     def __getstate__(self):
         self._protected = True
         return super().__getstate__()
+
+    def __del__(self):
+        if not self._protected:
+            self.delete(only_if_empty=False)
 
     def create(self):
         self.path.mkdir(parents=True, exist_ok=True)

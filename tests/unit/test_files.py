@@ -31,7 +31,7 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(len(self.directory), 1)
 
     def test_create_subdirectory(self):
-        self.directory.create_subdirectory("another_test")
+        directory = self.directory.create_subdirectory("another_test")
         self.assertTrue(Path("test/another_test").exists())
 
     def test_is_empty(self):
