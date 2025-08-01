@@ -77,7 +77,7 @@ class ImportAlarm:
         trigger the warning.
         """
         if self.message is not None:
-            warnings.warn(self.message, category=ImportWarning)
+            warnings.warn(self.message, category=ImportWarning, stacklevel=2)
             if self._fail_on_warning:
                 raise ImportAlarmError(self.message)
 
@@ -89,9 +89,6 @@ class ImportAlarm:
             # import successful, so silence our warning
             self.message = None
             return
-        if issubclass(exc_type, ImportError):
-            # import broken; retain message, but suppress error
-            return True
-        else:
-            # unrelated error during import, re-raise
-            return False
+        # True: import broken; retain message, but suppress error
+        # False: unrelated error during import, re-raise
+        return issubclass(exc_type, ImportError)
