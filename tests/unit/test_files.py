@@ -1,3 +1,4 @@
+import pickle
 import unittest
 from pathlib import Path
 
@@ -36,7 +37,7 @@ class TestFiles(unittest.TestCase):
         self.assertFalse(Path("something").exists())
         self.directory = DirectoryObject("something")
         self.assertTrue(Path("something").exists())
-        _ = self.directory.__getstate__()
+        _ = pickle.dumps(self.directory)
         self.directory = DirectoryObject("something_else")
         self.assertTrue(Path("something").exists())
         self.directory = DirectoryObject("something")
