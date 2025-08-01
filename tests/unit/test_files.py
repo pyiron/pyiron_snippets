@@ -120,14 +120,14 @@ class TestFiles(unittest.TestCase):
         new_file_1 = f.copy("another_test")
         self.assertEqual(new_file_1.read(), "sam wrote this wondrful thing")
         new_file_2 = f.copy("another_test", ".")
-        with open("another_test", "r") as file:
+        with open("another_test") as file:
             txt = file.read()
         self.assertEqual(txt, "sam wrote this wondrful thing")
         new_file_2.delete()  # needed because current directory
         new_file_3 = f.copy(str(f.path.parent / "another_test"), ".")
         self.assertEqual(new_file_1.path.absolute(), new_file_3.path.absolute())
         new_file_4 = f.copy(directory=".")
-        with open("test_copy.txt", "r") as file:
+        with open("test_copy.txt") as file:
             txt = file.read()
         self.assertEqual(txt, "sam wrote this wondrful thing")
         new_file_4.delete()  # needed because current directory

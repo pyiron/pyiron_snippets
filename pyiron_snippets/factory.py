@@ -32,8 +32,7 @@ Constructed classes can, in turn be used as bases in further class factories.
 
 from __future__ import annotations
 
-import pickle
-from abc import ABC, ABCMeta
+from abc import ABCMeta
 from functools import wraps
 from importlib import import_module
 from inspect import Parameter, signature
@@ -48,7 +47,7 @@ class _SingleInstance(ABCMeta):
 
     def __call__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(_SingleInstance, cls).__call__(*args, **kwargs)
+            cls._instance = super().__call__(*args, **kwargs)
         return cls._instance
 
 
@@ -181,19 +180,19 @@ class _ClassFactory(metaclass=_SingleInstance):
             for name in class_names:
                 try:
                     cls.class_registry.pop(name)
-                except KeyError as e:
+                except KeyError:
                     if skip_missing:
                         continue
                     else:
-                        raise KeyError(f"Could not find class {name}")
+                        raise KeyError(f"Could not find class {name}") from None
 
     def _build_class(
         self, name, bases, class_dict, sc_init_kwargs, class_factory_args
     ) -> type[_FactoryMade]:
 
-        if "__module__" not in class_dict.keys():
+        if "__module__" not in class_dict:
             class_dict["__module__"] = self.factory_function.__module__
-        if "__qualname__" not in class_dict.keys():
+        if "__qualname__" not in class_dict:
             class_dict["__qualname__"] = f"{self.__qualname__}.{name}"
         sc_init_kwargs["class_factory"] = self
         sc_init_kwargs["class_factory_args"] = class_factory_args
@@ -233,7 +232,7 @@ def _import_object(module_name, qualname):
     return obj
 
 
-class _FactoryMade(ABC):
+class _FactoryMade:
     """
     A mix-in to make class-factory-produced classes pickleable.
 
@@ -386,6 +385,7 @@ def classfactory(
         >>> import pickle
         >>>
         >>> from pyiron_snippets.factory import classfactory
+        >>> from abc import ABC
         >>>
         >>> class HasN(ABC):
         ...     '''Some class I want to make dynamically subclass.'''

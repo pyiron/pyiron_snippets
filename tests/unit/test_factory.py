@@ -18,7 +18,7 @@ from pyiron_snippets.factory import (
 )
 
 
-class HasN(ABC):
+class HasN:
     def __init_subclass__(cls, /, n=0, s="foo", **kwargs):
         super().__init_subclass__(**kwargs)
         cls.n = n
@@ -53,7 +53,7 @@ class FactoryOwner:
 Has2 = has_n_factory(2, "factory_made")  # For testing repeated inheritance
 
 
-class HasM(ABC):
+class HasM:
     def __init_subclass__(cls, /, m=0, **kwargs):
         super(HasM, cls).__init_subclass__(**kwargs)
         cls.m = m
@@ -163,7 +163,7 @@ class TestClassfactory(unittest.TestCase):
         factory = has_n_factory(2, "foo")
         self.assertTrue(
             issubclass(factory, HasN),
-            msg=f"Resulting class should inherit from the base",
+            msg="Resulting class should inherit from the base",
         )
         self.assertEqual(2, factory.n, msg="Factory args should get interpreted")
         self.assertEqual("foo", factory.s, msg="Factory kwargs should get interpreted")
