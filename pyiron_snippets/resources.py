@@ -14,10 +14,7 @@ from fnmatch import fnmatch
 from glob import glob
 from typing import Any
 
-if os.name == "nt":
-    EXE_SUFFIX = "bat"
-else:
-    EXE_SUFFIX = "sh"
+EXE_SUFFIX = "bat" if os.name == "nt" else "sh"
 
 
 class ResourceNotFound(RuntimeError):
@@ -89,7 +86,7 @@ class AbstractResolver(ABC):
         except StopIteration:
             raise ResourceNotFound(f"Could not find {name} in {self}!") from None
 
-    def chain(self, *resolvers: "AbstractResolver") -> "ResolverChain":
+    def chain(self, *resolvers: AbstractResolver) -> ResolverChain:
         """
         Return a new resolver that searches this and all given resolvers sequentially.
 
