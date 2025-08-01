@@ -6,7 +6,7 @@ import pyiron_snippets
 
 
 def load_tests(loader, tests, ignore):
-    for importer, name, ispkg in pkgutil.walk_packages(
+    for _, name, _ in pkgutil.walk_packages(
         pyiron_snippets.__path__, pyiron_snippets.__name__ + "."
     ):
         tests.addTests(doctest.DocTestSuite(name))

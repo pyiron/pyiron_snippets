@@ -30,15 +30,13 @@ def TemporaryEnvironment(**kwargs):
     """
     old_vars = {}
     for k, v in kwargs.items():
-        try:
+        with contextlib.suppress(KeyError):
             old_vars[k] = os.environ[k]
-        except KeyError:
-            pass
         os.environ[k] = str(v)
     try:
         yield
     finally:
-        for k, v in kwargs.items():
+        for k in kwargs:
             if k in old_vars:
                 os.environ[k] = old_vars[k]
             else:

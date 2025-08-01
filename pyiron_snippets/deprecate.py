@@ -108,28 +108,26 @@ class Deprecator:
             return depr.wrap
 
     def _build_message(self):
-        if self.category == PendingDeprecationWarning:
+        if self.category is PendingDeprecationWarning:
             message_format = "{} will be deprecated"
         else:
             message_format = "{} is deprecated"
 
         if self.message is not None:
-            message_format += ": {}.".format(self.message)
+            message_format += f": {self.message}."
         else:
             message_format += "."
 
         if self.version is not None:
             message_format += (
-                " It is not guaranteed to be in service in vers. {}".format(
-                    self.version
-                )
+                f" It is not guaranteed to be in service in vers. {self.version}"
             )
 
         return message_format
 
     def __deprecate_function(self, function):
         message = self._build_message().format(
-            "{}.{}".format(function.__module__, function.__name__)
+            f"{function.__module__}.{function.__name__}"
         )
 
         @functools.wraps(function)
@@ -148,9 +146,7 @@ class Deprecator:
                 if kw in self.arguments:
                     warnings.warn(
                         message_format.format(
-                            "{}.{}({}={})".format(
-                                function.__module__, function.__name__, kw, kwargs[kw]
-                            )
+                            "{function.__module__}.{function.__name__}({kw}={kwargs[kw]})"
                         ),
                         category=self.category,
                         stacklevel=2,
