@@ -115,7 +115,7 @@ Make dynamic classes that are still pickle-able
 Shortcuts for filesystem manipulation
 
 ```python
->>> from pyiron_snippets.files import DirectoryObject, FileObject
+>>> from pyiron_snippets.files import DirectoryObject
 >>>
 >>> d = DirectoryObject("some_dir")
 >>> d.write(file_name="my_filename.txt", content="Some content")
