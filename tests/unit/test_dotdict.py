@@ -21,7 +21,7 @@ class TestDotDict(unittest.TestCase):
         with self.assertRaises(
             AttributeError, msg="Failed attribute access should raise attribute error"
         ):
-            dd.missing
+            _ = dd.missing
 
 
 if __name__ == "__main__":
