@@ -1,4 +1,3 @@
-import platform
 import unittest
 from pathlib import Path
 
@@ -31,14 +30,14 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(len(self.directory), 1)
 
     def test_del(self):
-        directory = DirectoryObject("something")
+        self.directory = DirectoryObject("something")
         self.assertTrue(Path("something").exists())
-        directory = None
+        self.directory = None
         self.assertFalse(Path("something").exists())
-        directory = DirectoryObject("something")
+        self.directory = DirectoryObject("something")
         self.assertTrue(Path("something").exists())
-        state = directory.__getstate__()
-        directory = None
+        _ = self.directory.__getstate__()
+        self.directory = None
         self.assertTrue(Path("something").exists())
 
     def test_create_subdirectory(self):
