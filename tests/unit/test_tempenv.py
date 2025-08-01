@@ -60,7 +60,7 @@ class TestTemporaryEnvironment(unittest.TestCase):
             with TemporaryEnvironment(FOO="1"):
                 self.assertEqual(os.environ.get("FOO"), "1")
                 raise Exception("Some Error")
-        except:
+        except Exception:
             self.assertEqual(
                 os.environ.get("FOO"),
                 "0",
