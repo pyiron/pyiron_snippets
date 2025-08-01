@@ -37,7 +37,7 @@ class TestFiles(unittest.TestCase):
         self.directory = DirectoryObject("something")
         self.assertTrue(Path("something").exists())
         _ = self.directory.__getstate__()
-        self.directory = None
+        self.directory = DirectoryObject("something_else")
         self.assertTrue(Path("something").exists())
 
     def test_create_subdirectory(self):
