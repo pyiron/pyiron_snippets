@@ -81,6 +81,11 @@ class DirectoryObject:
         elif isinstance(directory, DirectoryObject):
             self.path = directory.path
         self.create()
+        self._protected = False
+
+    def __getstate__(self):
+        self._protected = True
+        return super().__getstate__()
 
     def create(self):
         self.path.mkdir(parents=True, exist_ok=True)
