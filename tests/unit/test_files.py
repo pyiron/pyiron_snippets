@@ -30,6 +30,17 @@ class TestFiles(unittest.TestCase):
         )
         self.assertEqual(len(self.directory), 1)
 
+    def test_del(self):
+        directory = DirectoryObject("something")
+        self.assertTrue(Path("something").exists())
+        directory = None
+        self.assertFalse(Path("something").exists())
+        directory = DirectoryObject("something")
+        self.assertTrue(Path("something").exists())
+        state = directory.__getstate__()
+        directory = None
+        self.assertTrue(Path("something").exists())
+
     def test_create_subdirectory(self):
         directory = self.directory.create_subdirectory("another_test")
         self.assertTrue(Path("test/another_test").exists())
