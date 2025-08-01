@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import time
 import warnings
-from itertools import count
-from typing import Optional, TypeVar, Union
+
 from collections.abc import Callable
+from itertools import count
+from typing import TypeVar
 
 T = TypeVar("T")
 
