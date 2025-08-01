@@ -52,6 +52,8 @@ class DirectoryObject:
 
     def __getstate__(self):
         self._protected = True
+        if not hasattr(self.path, "__getstate__"):
+            return self.path.__dict__
         return self.path.__getstate__()
 
     def __del__(self):
