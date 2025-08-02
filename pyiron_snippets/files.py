@@ -52,10 +52,7 @@ class DirectoryObject:
 
     def __getstate__(self):
         self._protected = True
-        try:
-            return self.path.__getstate__()
-        except AttributeError:
-            return self.path
+        return self.path.__getstate__()
 
     def __del__(self):
         if not self._protected:
