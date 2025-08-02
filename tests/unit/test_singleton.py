@@ -1,4 +1,5 @@
 import unittest
+
 from pyiron_snippets.singleton import Singleton
 
 
@@ -15,5 +16,5 @@ class TestSingleton(unittest.TestCase):
         self.assertEqual(2, f1.x)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

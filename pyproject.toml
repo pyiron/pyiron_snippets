@@ -1,7 +1,8 @@
 [build-system]
 requires = [
-    "setuptools",
+    "setuptools>=68.0.0",    # ensure build_meta exists under 3.13
     "versioneer[toml]==0.29",
+    "wheel",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -10,17 +11,16 @@ name = "pyiron_snippets"
 description = "pyiron_snippets - Short, dependency-free python snippets."
 readme = "docs/README.md"
 keywords = [ "pyiron",]
-requires-python = ">=3.9, <3.13"
+requires-python = ">=3.11, <3.14"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: BSD License",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
 ]
@@ -53,5 +53,35 @@ attr = "pyiron_snippets.__version__"
 
 [project.optional-dependencies]
 tests = [
-    "cloudpickle==3.1.0",
+    "cloudpickle==3.1.1",
 ]
+
+[tool.ruff]
+exclude = ["docs", "notebooks", "setup.py", "_version.py"]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = ["E501"] #ignore line-length violations
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Ignore unused imports in init files -- we specify APIs this way
+
+[tool.black]
+extend-exclude = '''
+(
+  ^/docs
+)
+'''

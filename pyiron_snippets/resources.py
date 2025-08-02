@@ -4,20 +4,17 @@ Classes to find data files and executables in global paths.
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from collections.abc import Iterator, Iterable
 import os
 import os.path
+import re
+import warnings
+from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
 from fnmatch import fnmatch
 from glob import glob
-import re
 from typing import Any, Self
-import warnings
 
-if os.name == "nt":
-    EXE_SUFFIX = "bat"
-else:
-    EXE_SUFFIX = "sh"
+EXE_SUFFIX = "bat" if os.name == "nt" else "sh"
 
 
 class ResourceNotFound(RuntimeError):
@@ -89,7 +86,7 @@ class AbstractResolver(ABC):
         except StopIteration:
             raise ResourceNotFound(f"Could not find {name} in {self}!") from None
 
-    def chain(self, *resolvers: "AbstractResolver") -> Self | "ResolverChain":
+    def chain(self, *resolvers: AbstractResolver) -> Self | ResolverChain:
         """
         Return a new resolver that searches this and all given resolvers sequentially.
 

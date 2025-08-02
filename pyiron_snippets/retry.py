@@ -1,22 +1,19 @@
-"""
-
-"""
-
 from __future__ import annotations
 
-from itertools import count
 import time
-from typing import Callable, Optional, Type, TypeVar, Tuple, Union
 import warnings
+from collections.abc import Callable
+from itertools import count
+from typing import TypeVar
 
 T = TypeVar("T")
 
 
 def retry(
     func: Callable[[], T],
-    error: Union[Type[Exception], Tuple[Type[Exception], ...]],
+    error: type[Exception] | tuple[type[Exception], ...],
     msg: str,
-    at_most: Optional[int] = None,
+    at_most: int | None = None,
     delay: float = 1.0,
     delay_factor: float = 1.0,
     log: bool | object = True,
@@ -46,10 +43,7 @@ def retry(
     Returns:
         object: whatever is returned by `func`
     """
-    if at_most is None:
-        tries = count()
-    else:
-        tries = range(at_most)
+    tries = count() if at_most is None else range(at_most)
     for i in tries:
         try:
             return func()
@@ -57,7 +51,7 @@ def retry(
             warning = f"{msg} Trying again in {delay}s. Tried {i + 1} times so far..."
             if isinstance(log, bool):
                 if log:
-                    warnings.warn(warning)
+                    warnings.warn(warning, stacklevel=2)
             else:
                 log.warn(warning)
             time.sleep(delay)
