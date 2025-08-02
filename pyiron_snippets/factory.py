@@ -72,7 +72,9 @@ class _FactoryTown(metaclass=_SingleInstance):
     def _factory_address(factory_function: Callable) -> str:
         return f"{factory_function.__module__}.{factory_function.__qualname__}"
 
-    def get_factory(self, factory_function: Callable[..., tuple[str, tuple[type, ...], dict, dict]]) -> _ClassFactory:
+    def get_factory(
+        self, factory_function: Callable[..., tuple[str, tuple[type, ...], dict, dict]]
+    ) -> _ClassFactory:
 
         self._verify_function_only_takes_positional_args(factory_function)
 
@@ -139,7 +141,6 @@ class _ClassFactory(metaclass=_SingleInstance):
     _decorated_as_classfactory: ClassVar[bool] = False
     factory_function: ClassVar[Callable[..., tuple[str, tuple[type, ...], dict, dict]]]
     class_registry: ClassVar[dict[str, type[_FactoryMade]]] = {}
-
 
     def __init_subclass__(cls, /, factory_function, **kwargs):
         super().__init_subclass__(**kwargs)
