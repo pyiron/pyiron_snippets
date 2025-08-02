@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator
 from fnmatch import fnmatch
 from glob import glob
-from typing import Any
+from typing import Any, Self
 
 EXE_SUFFIX = "bat" if os.name == "nt" else "sh"
 
@@ -86,7 +86,7 @@ class AbstractResolver(ABC):
         except StopIteration:
             raise ResourceNotFound(f"Could not find {name} in {self}!") from None
 
-    def chain(self, *resolvers: AbstractResolver) -> AbstractResolver:
+    def chain(self, *resolvers: AbstractResolver) -> Self | ResolverChain:
         """
         Return a new resolver that searches this and all given resolvers sequentially.
 
