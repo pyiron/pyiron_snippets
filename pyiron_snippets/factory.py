@@ -59,7 +59,6 @@ class _FactoryTown(metaclass=_SingleInstance):
     """
 
     factories: dict[str, _ClassFactory] = {}
-    _decorated_as_classfactory: ClassVar[bool] = False
 
     @classmethod
     def clear(cls):
@@ -140,7 +139,7 @@ class _ClassFactory(metaclass=_SingleInstance):
     For making dynamically created classes the same class.
     """
 
-    _decorated_as_classfactory: ClassVar[bool] = False
+    _decorated_as_classfactory: bool = False
     factory_function: ClassVar[Callable[..., tuple[str, tuple[type, ...], dict, dict]]]
     class_registry: ClassVar[dict[str, type[_FactoryMade]]] = {}
 
