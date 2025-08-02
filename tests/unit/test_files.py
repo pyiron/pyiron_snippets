@@ -1,8 +1,8 @@
-import platform
+import pickle
 import unittest
 from pathlib import Path
 
-from pyiron_snippets.files import DirectoryObject, FileObject
+from pyiron_snippets.files import DirectoryObject
 
 
 class TestFiles(unittest.TestCase):
@@ -18,23 +18,6 @@ class TestFiles(unittest.TestCase):
         directory = DirectoryObject(self.directory)
         self.assertEqual(directory.path, self.directory.path)
 
-    def test_file_instantiation(self):
-        self.assertEqual(
-            FileObject("test.txt", self.directory).path,
-            FileObject("test.txt", "test").path,
-            msg="DirectoryObject and str must give the same object",
-        )
-        self.assertEqual(
-            FileObject("test/test.txt").path,
-            FileObject("test.txt", "test").path,
-            msg="File path not same as directory path",
-        )
-
-        if platform.system() == "Windows":
-            self.assertRaises(ValueError, FileObject, "C:\\test.txt", "test")
-        else:
-            self.assertRaises(ValueError, FileObject, "/test.txt", "test")
-
     def test_directory_exists(self):
         self.assertTrue(Path("test").exists() and Path("test").is_dir())
 
@@ -47,26 +30,21 @@ class TestFiles(unittest.TestCase):
         )
         self.assertEqual(len(self.directory), 1)
 
+    def test_del(self):
+        self.directory = DirectoryObject("something")
+        self.assertTrue(Path("something").exists())
+        self.directory = None
+        self.assertFalse(Path("something").exists())
+        self.directory = DirectoryObject("something")
+        self.assertTrue(Path("something").exists())
+        _ = pickle.dumps(self.directory)
+        self.directory = DirectoryObject("something_else")
+        self.assertTrue(Path("something").exists())
+        self.directory = DirectoryObject("something")
+
     def test_create_subdirectory(self):
-        self.directory.create_subdirectory("another_test")
+        _ = self.directory.create_subdirectory("another_test")
         self.assertTrue(Path("test/another_test").exists())
-
-    def test_path(self):
-        f = FileObject("test.txt", self.directory)
-        self.assertEqual(str(f.path).replace("\\", "/"), "test/test.txt")
-
-    def test_read_and_write(self):
-        f = FileObject("test.txt", self.directory)
-        f.write("something")
-        self.assertEqual(f.read(), "something")
-
-    def test_is_file(self):
-        f = FileObject("test.txt", self.directory)
-        self.assertFalse(f.is_file())
-        f.write("something")
-        self.assertTrue(f.is_file())
-        f.delete()
-        self.assertFalse(f.is_file())
 
     def test_is_empty(self):
         self.assertTrue(self.directory.is_empty())
@@ -113,34 +91,6 @@ class TestFiles(unittest.TestCase):
             len(self.directory),
             msg="Should be able to remove just one file",
         )
-
-    def test_copy(self):
-        f = FileObject("test_copy.txt", self.directory)
-        f.write("sam wrote this wondrful thing")
-        new_file_1 = f.copy("another_test")
-        self.assertEqual(new_file_1.read(), "sam wrote this wondrful thing")
-        new_file_2 = f.copy("another_test", ".")
-        with open("another_test") as file:
-            txt = file.read()
-        self.assertEqual(txt, "sam wrote this wondrful thing")
-        new_file_2.delete()  # needed because current directory
-        new_file_3 = f.copy(str(f.path.parent / "another_test"), ".")
-        self.assertEqual(new_file_1.path.absolute(), new_file_3.path.absolute())
-        new_file_4 = f.copy(directory=".")
-        with open("test_copy.txt") as file:
-            txt = file.read()
-        self.assertEqual(txt, "sam wrote this wondrful thing")
-        new_file_4.delete()  # needed because current directory
-        with self.assertRaises(ValueError):
-            f.copy()
-
-    def test_str(self):
-        f = FileObject("test_copy.txt", self.directory)
-        if platform.system() == "Windows":
-            txt = f"my file: {self.directory.path.absolute()}\\test_copy.txt"
-        else:
-            txt = f"my file: {self.directory.path.absolute()}/test_copy.txt"
-        self.assertEqual(f"my file: {f}", txt)
 
 
 if __name__ == "__main__":
