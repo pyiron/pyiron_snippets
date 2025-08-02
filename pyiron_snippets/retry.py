@@ -4,7 +4,7 @@ import time
 import warnings
 from collections.abc import Callable
 from itertools import count
-from typing import TypeVar
+from typing import TypeVar, Any
 
 T = TypeVar("T")
 
@@ -16,7 +16,7 @@ def retry(
     at_most: int | None = None,
     delay: float = 1.0,
     delay_factor: float = 1.0,
-    log: bool | object = True,
+    log: bool | Any = True,
 ) -> T:
     """
     Try to call `func` until it no longer raises `error`.
