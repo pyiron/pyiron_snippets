@@ -11,7 +11,7 @@ import os.path
 from fnmatch import fnmatch
 from glob import glob
 import re
-from typing import Any
+from typing import Any, Self
 import warnings
 
 if os.name == "nt":
@@ -38,7 +38,7 @@ class AbstractResolver(ABC):
     """
 
     @abstractmethod
-    def _search(self, name: tuple[str]) -> Iterator[Any]:
+    def _search(self, name: tuple[str, ...]) -> Iterator[Any]:
         pass
 
     def search(self, name: Iterable[str] | str = "*") -> Iterator[Any]:
@@ -89,7 +89,7 @@ class AbstractResolver(ABC):
         except StopIteration:
             raise ResourceNotFound(f"Could not find {name} in {self}!") from None
 
-    def chain(self, *resolvers: "AbstractResolver") -> "ResolverChain":
+    def chain(self, *resolvers: "AbstractResolver") -> Self | "ResolverChain":
         """
         Return a new resolver that searches this and all given resolvers sequentially.
 
