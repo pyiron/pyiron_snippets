@@ -22,4 +22,4 @@ jobs:
       do-codacy: false
       do-coveralls: false
       do-ruff-check: true
-
+      do-mypy: true
