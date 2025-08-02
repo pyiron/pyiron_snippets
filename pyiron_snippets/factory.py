@@ -33,6 +33,7 @@ Constructed classes can, in turn be used as bases in further class factories.
 from __future__ import annotations
 
 from abc import ABCMeta
+from collections.abc import Callable
 from functools import wraps
 from importlib import import_module
 from inspect import Parameter, signature
@@ -57,7 +58,7 @@ class _FactoryTown(metaclass=_SingleInstance):
     factory object.
     """
 
-    factories = {}
+    factories: dict[str, _ClassFactory] = {}
 
     @classmethod
     def clear(cls):
@@ -69,10 +70,12 @@ class _FactoryTown(metaclass=_SingleInstance):
         cls.factories = {}
 
     @staticmethod
-    def _factory_address(factory_function: callable) -> str:
+    def _factory_address(factory_function: Callable) -> str:
         return f"{factory_function.__module__}.{factory_function.__qualname__}"
 
-    def get_factory(self, factory_function: callable[..., type]) -> _ClassFactory:
+    def get_factory(
+        self, factory_function: Callable[..., tuple[str, tuple[type, ...], dict, dict]]
+    ) -> _ClassFactory:
 
         self._verify_function_only_takes_positional_args(factory_function)
 
@@ -103,7 +106,7 @@ class _FactoryTown(metaclass=_SingleInstance):
         return wraps(factory_function)(new_factory_class())
 
     @staticmethod
-    def _verify_function_only_takes_positional_args(factory_function: callable):
+    def _verify_function_only_takes_positional_args(factory_function: Callable):
         parameters = signature(factory_function).parameters.values()
         if any(
             p.kind not in [Parameter.POSITIONAL_ONLY, Parameter.VAR_POSITIONAL]
@@ -136,7 +139,9 @@ class _ClassFactory(metaclass=_SingleInstance):
     For making dynamically created classes the same class.
     """
 
-    _decorated_as_classfactory: ClassVar[bool] = False
+    _decorated_as_classfactory: bool = False
+    factory_function: ClassVar[Callable[..., tuple[str, tuple[type, ...], dict, dict]]]
+    class_registry: ClassVar[dict[str, type[_FactoryMade]]] = {}
 
     def __init_subclass__(cls, /, factory_function, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -193,7 +198,7 @@ class _ClassFactory(metaclass=_SingleInstance):
         if "__module__" not in class_dict:
             class_dict["__module__"] = self.factory_function.__module__
         if "__qualname__" not in class_dict:
-            class_dict["__qualname__"] = f"{self.__qualname__}.{name}"
+            class_dict["__qualname__"] = f"{self.factory_function.__qualname__}.{name}"
         sc_init_kwargs["class_factory"] = self
         sc_init_kwargs["class_factory_args"] = class_factory_args
 
@@ -248,7 +253,7 @@ class _FactoryMade:
     """
 
     # DEPRECATED: Use _reduce_imports_as instead
-    _class_returns_from_decorated_function: ClassVar[callable | None] = None
+    _class_returns_from_decorated_function: ClassVar[Callable | None] = None
 
     _reduce_imports_as: ClassVar[tuple[str, str] | None] = None  # Module and qualname
 
@@ -337,7 +342,7 @@ def _instantiate_from_decorated(module, qualname, newargs_ex):
 
 
 def classfactory(
-    factory_function: callable[..., tuple[str, tuple[type, ...], dict, dict]],
+    factory_function: Callable[..., tuple[str, tuple[type, ...], dict, dict]],
 ) -> _ClassFactory:
     """
     A decorator for building dynamic class factories whose classes are unique and whose
@@ -354,7 +359,7 @@ def classfactory(
     be overridden.
 
     Args:
-        factory_function (callable[..., tuple[str, tuple[type, ...], dict, dict]]):
+        factory_function (Callable[..., tuple[str, tuple[type, ...], dict, dict]]):
             A function returning arguments that would be passed to `builtins.type` to
             dynamically generate a class. The function must accept exclusively
             positional arguments
