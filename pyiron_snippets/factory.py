@@ -33,11 +33,12 @@ Constructed classes can, in turn be used as bases in further class factories.
 from __future__ import annotations
 
 from abc import ABCMeta
+from collections.abc import Callable
 from functools import wraps
 from importlib import import_module
 from inspect import Parameter, signature
 from re import sub
-from typing import ClassVar, Callable
+from typing import ClassVar
 
 
 class _SingleInstance(ABCMeta):
@@ -58,6 +59,7 @@ class _FactoryTown(metaclass=_SingleInstance):
     """
 
     factories: dict[str, _ClassFactory] = {}
+    _decorated_as_classfactory: ClassVar[bool] = False
 
     @classmethod
     def clear(cls):
@@ -427,7 +429,7 @@ def classfactory(
 
     """
     factory = _FACTORY_TOWN.get_factory(factory_function)
-    setattr(factory, "_decorated_as_classfactory", True)
+    factory._decorated_as_classfactory = True
     return factory
 
 

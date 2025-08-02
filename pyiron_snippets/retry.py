@@ -4,7 +4,7 @@ import time
 import warnings
 from collections.abc import Callable
 from itertools import count
-from typing import TypeVar, Any
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
