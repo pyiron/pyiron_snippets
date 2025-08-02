@@ -89,6 +89,7 @@ extend-exclude = '''
 [tool.mypy]
 exclude = [
     "^docs/conf\\.py$",
+    "^pyiron_snippets/files\\.py$",
     "^tests/",
 ]
 ignore_missing_imports = true
