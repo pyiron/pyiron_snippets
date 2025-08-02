@@ -14,7 +14,7 @@ class Singleton(ABCMeta):
 
     """
 
-    _instances = {}
+    _instances: dict[type, object] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
