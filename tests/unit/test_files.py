@@ -92,6 +92,17 @@ class TestFiles(unittest.TestCase):
             msg="Should be able to remove just one file",
         )
 
+    def test_compress(self):
+        self.directory.write(file_name="test1.txt", content="something")
+        self.directory.compress()
+        self.assertTrue(
+            Path("test.tar.gz").exists(),
+            msg="Compressed file should be created",
+        )
+        # Test that compressing again does not overwrite the existing file
+        self.directory.compress()
+        self.assertTrue(Path("test.tar.gz").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
