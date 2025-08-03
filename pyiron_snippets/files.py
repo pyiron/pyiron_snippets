@@ -43,11 +43,12 @@ def categorize_folder_items(folder_path):
 class DirectoryObject:
     def __init__(self, directory: str | Path | DirectoryObject):
         if isinstance(directory, str):
-            self.path = Path(directory)
+            path = Path(directory)
         elif isinstance(directory, Path):
-            self.path = directory
+            path = directory
         elif isinstance(directory, DirectoryObject):
-            self.path = directory.path
+            path = directory.path
+        self.path = cast(Path, path)
         self.create()
         self._protected = False
 
@@ -113,7 +114,6 @@ class DirectoryObject:
 
         with tarfile.open(output_tar_path, "w:gz") as tar:
             for file in directory.rglob("*"):
-                if file.is_file():
-                    if file.resolve() not in exclude_set:
-                        arcname = file.relative_to(directory)
-                        tar.add(file, arcname=arcname)
+                if file.is_file() and file.resolve() not in exclude_set:
+                    arcname = file.relative_to(directory)
+                    tar.add(file, arcname=arcname)
