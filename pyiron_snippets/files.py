@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tarfile
 from pathlib import Path
+from typing import cast
 
 
 def delete_files_and_directories_recursively(path):
