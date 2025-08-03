@@ -97,9 +97,7 @@ class DirectoryObject:
             if path.is_file():
                 path.unlink()
 
-    def compress(
-        self, exclude_files: list[str | Path] | None = None
-    ):
+    def compress(self, exclude_files: list[str | Path] | None = None):
         directory = self.path.resolve()
         output_tar_path = directory.with_suffix(".tar.gz")
         if output_tar_path.exists():
@@ -108,7 +106,10 @@ class DirectoryObject:
             exclude_files = []
         else:
             exclude_files = [Path(f) for f in exclude_files]
-        exclude_set = {f.resolve() if f.is_absolute() else (directory / f).resolve() for f in exclude_files}
+        exclude_set = {
+            f.resolve() if f.is_absolute() else (directory / f).resolve()
+            for f in exclude_files
+        }
 
         with tarfile.open(output_tar_path, "w:gz") as tar:
             for file in directory.rglob("*"):

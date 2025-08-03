@@ -108,8 +108,12 @@ class TestFiles(unittest.TestCase):
         self.directory.compress(exclude_files=["test1.txt"])
         with tarfile.open("test.tar.gz", "r:*") as f:
             content = [name for name in f.getnames()]
-            self.assertNotIn("test1.txt", content, msg="Excluded file should not be in archive")
-            self.assertIn("test2.txt", content, msg="Included file should be in archive")
+            self.assertNotIn(
+                "test1.txt", content, msg="Excluded file should not be in archive"
+            )
+            self.assertIn(
+                "test2.txt", content, msg="Included file should be in archive"
+            )
 
 
 if __name__ == "__main__":
