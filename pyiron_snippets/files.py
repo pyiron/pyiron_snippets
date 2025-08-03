@@ -49,7 +49,7 @@ class DirectoryObject:
             path = directory
         elif isinstance(directory, DirectoryObject):
             path = directory.path
-        self.path = cast(Path, path)
+        self.path: Path = path
         self.create()
         self._protected = False
 
@@ -110,7 +110,7 @@ class DirectoryObject:
             exclude_files = [Path(f) for f in exclude_files]
         exclude_set = {
             f.resolve() if f.is_absolute() else (directory / f).resolve()
-            for f in exclude_files
+            for f in cast(list[Path], exclude_files)
         }
 
         with tarfile.open(output_tar_path, "w:gz") as tar:
