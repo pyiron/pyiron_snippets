@@ -1,4 +1,5 @@
 import pickle
+import tarfile
 import unittest
 from pathlib import Path
 
@@ -94,6 +95,7 @@ class TestFiles(unittest.TestCase):
 
     def test_compress(self):
         self.directory.write(file_name="test1.txt", content="something")
+        self.directory.write(file_name="test2.txt", content="something")
         self.directory.compress()
         self.assertTrue(
             Path("test.tar.gz").exists(),
@@ -102,6 +104,12 @@ class TestFiles(unittest.TestCase):
         # Test that compressing again does not overwrite the existing file
         self.directory.compress()
         self.assertTrue(Path("test.tar.gz").exists())
+        Path("test.tar.gz").unlink()
+        self.directory.compress(exclude_files=["test1.txt"])
+        with tarfile.open("test.tar.gz", "r:*") as f:
+            content = [name for name in f.getnames()]
+            self.assertNotIn("test1.txt", content, msg="Excluded file should not be in archive")
+            self.assertIn("test2.txt", content, msg="Included file should be in archive")
 
 
 if __name__ == "__main__":
