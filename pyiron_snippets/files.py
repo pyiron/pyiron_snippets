@@ -47,6 +47,7 @@ class DirectoryObject:
         self,
         directory: str | Path | DirectoryObject = ".",
         generate_unique_directory: bool | None = None,
+        protected: bool = False,
     ):
         if isinstance(directory, str):
             path = Path(directory)
@@ -60,7 +61,7 @@ class DirectoryObject:
             path = path / Path(f"data_{uuid.uuid4().hex}")
         self.path: Path = path
         self.create()
-        self._protected = False
+        self._protected = protected
 
     def __getstate__(self):
         self._protected = True
