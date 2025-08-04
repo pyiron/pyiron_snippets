@@ -49,6 +49,7 @@ class DirectoryObject:
     It supports unique directory generation and can be protected from deletion
     on garbage collection.
     """
+
     def __init__(
         self,
         directory: str | Path | DirectoryObject = ".",
@@ -59,7 +60,7 @@ class DirectoryObject:
         Initialize a DirectoryObject.
 
         Args:
-            directory (str | Path | DirectoryObject): The directory path or 
+            directory (str | Path | DirectoryObject): The directory path or
                 DirectoryObject instance.
             generate_unique_directory (bool | None): If True, generates a unique
                 directory name, otherwise it still generates a unique name if
