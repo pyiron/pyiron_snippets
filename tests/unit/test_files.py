@@ -94,6 +94,8 @@ class TestFiles(unittest.TestCase):
         )
 
     def test_compress(self):
+        while Path("test.tar.gz").exists():
+            Path("test.tar.gz").unlink()
         self.directory.write(file_name="test1.txt", content="something")
         self.directory.write(file_name="test2.txt", content="something")
         self.directory.compress(exclude_files=["test1.txt"])
