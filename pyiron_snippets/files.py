@@ -113,8 +113,12 @@ class DirectoryObject:
             for f in cast(list[Path], exclude_files)
         }
 
+        files_to_delete = []
         with tarfile.open(output_tar_path, "w:gz") as tar:
             for file in directory.rglob("*"):
                 if file.is_file() and file.resolve() not in exclude_set:
                     arcname = file.relative_to(directory)
                     tar.add(file, arcname=arcname)
+                    files_to_delete.append(file)
+        for file in files_to_delete:
+            file.unlink()
