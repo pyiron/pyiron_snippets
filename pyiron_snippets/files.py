@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tarfile
+import uuid
 from pathlib import Path
 from typing import cast
 
@@ -42,13 +43,21 @@ def categorize_folder_items(folder_path):
 
 
 class DirectoryObject:
-    def __init__(self, directory: str | Path | DirectoryObject):
+    def __init__(
+        self,
+        directory: str | Path | DirectoryObject = ".",
+        generate_unique_directory: bool | None = None,
+    ):
         if isinstance(directory, str):
             path = Path(directory)
         elif isinstance(directory, Path):
             path = directory
         elif isinstance(directory, DirectoryObject):
             path = directory.path
+        if (
+            directory == "." and generate_unique_directory is None
+        ) or generate_unique_directory:
+            path = path / Path(f"data_{uuid.uuid4().hex}")
         self.path: Path = path
         self.create()
         self._protected = False
