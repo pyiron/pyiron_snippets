@@ -112,7 +112,6 @@ class DirectoryObject:
             f.resolve() if f.is_absolute() else (directory / f).resolve()
             for f in cast(list[Path], exclude_files)
         }
-
         files_to_delete = []
         with tarfile.open(output_tar_path, "w:gz") as tar:
             for file in directory.rglob("*"):
@@ -122,3 +121,12 @@ class DirectoryObject:
                     files_to_delete.append(file)
         for file in files_to_delete:
             file.unlink()
+
+    def decompress(self):
+        directory = self.path.resolve()
+        tar_path = directory.with_suffix(".tar.gz")
+        if not tar_path.exists():
+            return
+        with tarfile.open(tar_path, "r:gz") as tar:
+            tar.extractall(path=directory)
+        tar_path.unlink()

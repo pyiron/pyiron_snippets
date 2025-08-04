@@ -119,8 +119,15 @@ class TestFiles(unittest.TestCase):
         # Test that compressing again does not raise an error
         self.directory.compress()
         self.assertTrue(Path("test.tar.gz").exists())
-        while Path("test.tar.gz").exists():
-            Path("test.tar.gz").unlink()
+        self.directory.decompress()
+        self.assertTrue(
+            self.directory.file_exists("test2.txt"),
+            msg="Decompressed files should be back in the directory",
+        )
+        self.assertFalse(
+            Path("test.tar.gz").exists(),
+            msg="Archive should be deleted after decompression",
+        )
 
 
 if __name__ == "__main__":
