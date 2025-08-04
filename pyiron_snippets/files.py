@@ -128,5 +128,5 @@ class DirectoryObject:
         if not tar_path.exists():
             return
         with tarfile.open(tar_path, "r:gz") as tar:
-            tar.extractall(path=directory)
+            tar.extractall(path=directory, filter="fully_trusted")
         tar_path.unlink()
