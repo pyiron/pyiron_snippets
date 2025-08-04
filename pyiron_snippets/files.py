@@ -40,7 +40,9 @@ def categorize_folder_items(folder_path):
 
 
 class DirectoryObject:
-    def __init__(self, directory: str | Path | DirectoryObject, protected: bool = False):
+    def __init__(
+        self, directory: str | Path | DirectoryObject, protected: bool = False
+    ):
         if isinstance(directory, str):
             self.path = Path(directory)
         elif isinstance(directory, Path):
