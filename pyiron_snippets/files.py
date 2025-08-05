@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import tarfile
 from pathlib import Path
+from typing import cast
 
 
 def delete_files_and_directories_recursively(path):
@@ -44,11 +46,12 @@ class DirectoryObject:
         self, directory: str | Path | DirectoryObject, protected: bool = False
     ):
         if isinstance(directory, str):
-            self.path = Path(directory)
+            path = Path(directory)
         elif isinstance(directory, Path):
-            self.path = directory
+            path = directory
         elif isinstance(directory, DirectoryObject):
-            self.path = directory.path
+            path = directory.path
+        self.path: Path = path
         self.create()
         self._protected = protected
 
@@ -97,3 +100,35 @@ class DirectoryObject:
             path = self.get_path(file)
             if path.is_file():
                 path.unlink()
+
+    def compress(self, exclude_files: list[str | Path] | None = None):
+        directory = self.path.resolve()
+        output_tar_path = directory.with_suffix(".tar.gz")
+        if output_tar_path.exists():
+            return
+        if exclude_files is None:
+            exclude_files = []
+        else:
+            exclude_files = [Path(f) for f in exclude_files]
+        exclude_set = {
+            f.resolve() if f.is_absolute() else (directory / f).resolve()
+            for f in cast(list[Path], exclude_files)
+        }
+        files_to_delete = []
+        with tarfile.open(output_tar_path, "w:gz") as tar:
+            for file in directory.rglob("*"):
+                if file.is_file() and file.resolve() not in exclude_set:
+                    arcname = file.relative_to(directory)
+                    tar.add(file, arcname=arcname)
+                    files_to_delete.append(file)
+        for file in files_to_delete:
+            file.unlink()
+
+    def decompress(self):
+        directory = self.path.resolve()
+        tar_path = directory.with_suffix(".tar.gz")
+        if not tar_path.exists():
+            return
+        with tarfile.open(tar_path, "r:gz") as tar:
+            tar.extractall(path=directory, filter="fully_trusted")
+        tar_path.unlink()

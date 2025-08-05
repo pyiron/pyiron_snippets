@@ -1,4 +1,5 @@
 import pickle
+import tarfile
 import unittest
 from pathlib import Path
 
@@ -90,6 +91,42 @@ class TestFiles(unittest.TestCase):
             0,
             len(self.directory),
             msg="Should be able to remove just one file",
+        )
+
+    def test_compress(self):
+        while Path("test.tar.gz").exists():
+            Path("test.tar.gz").unlink()
+        self.directory.write(file_name="test1.txt", content="something")
+        self.directory.write(file_name="test2.txt", content="something")
+        self.directory.compress(exclude_files=["test1.txt"])
+        self.assertTrue(Path("test.tar.gz").exists())
+        with tarfile.open("test.tar.gz", "r:*") as f:
+            content = [name for name in f.getnames()]
+            self.assertNotIn(
+                "test1.txt", content, msg="Excluded file should not be in archive"
+            )
+            self.assertIn(
+                "test2.txt", content, msg="Included file should be in archive"
+            )
+        self.assertFalse(
+            self.directory.file_exists("test2.txt"),
+            msg="Compressed files should not be in the directory",
+        )
+        self.assertTrue(
+            self.directory.file_exists("test1.txt"),
+            msg="Excluded file should still be in the directory",
+        )
+        # Test that compressing again does not raise an error
+        self.directory.compress()
+        self.assertTrue(Path("test.tar.gz").exists())
+        self.directory.decompress()
+        self.assertTrue(
+            self.directory.file_exists("test2.txt"),
+            msg="Decompressed files should be back in the directory",
+        )
+        self.assertFalse(
+            Path("test.tar.gz").exists(),
+            msg="Archive should be deleted after decompression",
         )
 
 
