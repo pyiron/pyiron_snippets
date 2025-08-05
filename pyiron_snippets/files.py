@@ -80,10 +80,7 @@ class DirectoryObject:
         ) or generate_unique_directory:
             path = path / f"data_{uuid.uuid4().hex}"
         if protected is None:
-            if path.exists():
-                protected = True
-            else:
-                protected = False
+            protected = True if path.is_absolute() else False
         self._protected = protected
         self.path: Path = path
         self.create()
