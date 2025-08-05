@@ -18,6 +18,9 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(directory.path, self.directory.path)
         directory = DirectoryObject(self.directory)
         self.assertEqual(directory.path, self.directory.path)
+        directory = DirectoryObject()
+        self.assertTrue(str(directory.path).startswith("data"))
+        self.assertEqual(len(str(directory.path)), 37)
 
     def test_directory_exists(self):
         self.assertTrue(Path("test").exists() and Path("test").is_dir())

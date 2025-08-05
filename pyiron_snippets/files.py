@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tarfile
+import uuid
 from pathlib import Path
 from typing import cast
 
@@ -42,15 +43,41 @@ def categorize_folder_items(folder_path):
 
 
 class DirectoryObject:
+    """
+    A class to represent a directory object that can be created, deleted,
+    and managed. It can also compress and decompress its contents.
+    It supports unique directory generation and can be protected from deletion
+    on garbage collection.
+    """
+
     def __init__(
-        self, directory: str | Path | DirectoryObject, protected: bool = False
+        self,
+        directory: str | Path | DirectoryObject = ".",
+        generate_unique_directory: bool | None = None,
+        protected: bool = False,
     ):
+        """
+        Initialize a DirectoryObject.
+
+        Args:
+            directory (str | Path | DirectoryObject): The directory path or
+                DirectoryObject instance.
+            generate_unique_directory (bool | None): If True, generates a unique
+                directory name, otherwise it still generates a unique name if
+                the directory is "." and this parameter is None.
+            protected (bool): If True, prevents deletion of the directory object
+                on garbage collection.
+        """
         if isinstance(directory, str):
             path = Path(directory)
         elif isinstance(directory, Path):
             path = directory
         elif isinstance(directory, DirectoryObject):
             path = directory.path
+        if (
+            directory == "." and generate_unique_directory is None
+        ) or generate_unique_directory:
+            path = path / f"data_{uuid.uuid4().hex}"
         self.path: Path = path
         self.create()
         self._protected = protected
