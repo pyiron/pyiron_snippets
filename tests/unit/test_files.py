@@ -22,6 +22,16 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(str(directory.path).startswith("data"))
         self.assertEqual(len(str(directory.path)), 37)
 
+    def test_protected(self):
+        directory = DirectoryObject("protected", protected=True)
+        self.assertTrue(directory._protected)
+        directory = DirectoryObject("protected")
+        self.assertTrue(directory._protected)
+        directory.delete()
+        directory = DirectoryObject("protected")
+        self.assertFalse(directory._protected)
+        directory.delete()
+
     def test_directory_exists(self):
         self.assertTrue(Path("test").exists() and Path("test").is_dir())
 
