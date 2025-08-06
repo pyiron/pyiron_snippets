@@ -67,7 +67,7 @@ class DirectoryObject:
                 the directory is "." and this parameter is None.
             protected (bool | None): If True, prevents deletion of the
                 directory object on garbage collection. If None, it defaults to
-                False if the directory does not exist.
+                True if the directory already exists.
         """
         if isinstance(directory, str):
             path = Path(directory)
