@@ -54,7 +54,7 @@ class DirectoryObject:
         self,
         directory: str | Path | DirectoryObject = ".",
         generate_unique_directory: bool | None = None,
-        protected: bool = False,
+        protected: bool | None = None,
     ):
         """
         Initialize a DirectoryObject.
@@ -65,8 +65,9 @@ class DirectoryObject:
             generate_unique_directory (bool | None): If True, generates a unique
                 directory name, otherwise it still generates a unique name if
                 the directory is "." and this parameter is None.
-            protected (bool): If True, prevents deletion of the directory object
-                on garbage collection.
+            protected (bool | None): If True, prevents deletion of the
+                directory object on garbage collection. If None, it defaults to
+                True if the directory already exists.
         """
         if isinstance(directory, str):
             path = Path(directory)
@@ -78,9 +79,11 @@ class DirectoryObject:
             directory == "." and generate_unique_directory is None
         ) or generate_unique_directory:
             path = path / f"data_{uuid.uuid4().hex}"
+        if protected is None:
+            protected = path.exists()
+        self._protected = protected
         self.path: Path = path
         self.create()
-        self._protected = protected
 
     def __getstate__(self):
         self._protected = True
