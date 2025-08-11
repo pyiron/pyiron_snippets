@@ -65,7 +65,8 @@ class _FactoryTown(metaclass=_SingleInstance):
         """
         Remove factories.
 
-        Can be useful if you're
+        Can be useful if you're re-invoking `ClassFactory` on an updated factory
+        function.
         """
         cls.factories = {}
 
