@@ -41,3 +41,7 @@ class TestExceptionContext(unittest.TestCase):
                 stack.callback(rollback, history, "we shouldn't see this")
                 # because there's no exception here
             self.assertEqual(history, [])
+
+
+if __name__ == "__main__":
+    unittest.main()
