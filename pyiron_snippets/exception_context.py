@@ -61,14 +61,17 @@ class ExceptionExitStack(contextlib.ExitStack):
         ...     history
         []
 
-        No exception raised: callbacks do not run.
+        No exception raised: callbacks do not run. But, the stack can be combined with
+        other stacks.
 
+        >>> import contextlib
+        >>>
         >>> history = []
-        >>> with ExceptionExitStack() as stack:
-        ...     _ = stack.callback(its_historical, history, "we shouldn't see this")
-        ...     # because there's no exception here
+        >>> with ExceptionExitStack() as exc_stack, contextlib.ExitStack() as reg_stack:
+        ...     _ = exc_stack.callback(its_historical, history, "we shouldn't see this")
+        ...     _ = reg_stack.callback(its_historical, history, "but we should see this")
         >>> history
-        []
+        ['but we should see this']
     """
 
     def __init__(self, *exceptions: type[Exception]):
@@ -161,13 +164,15 @@ def on_error(
         ...     history
         []
 
-        No exception raised: callback does not run:
+        No exception raised: callback does not run. But, we can add regular callbacks
+        to the stack to combine effects.
 
         >>> history = []
         >>> with contextlib.ExitStack() as stack:
         ...     _ = stack.enter_context(on_error(its_historical, None, history, message="we shouldn't see this"))
+        ...     _ = stack.callback(its_historical, history, message="but we should see this")
         >>> history
-        []
+        ['but we should see this']
     """
 
     if exceptions is None:

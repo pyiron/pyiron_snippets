@@ -37,12 +37,14 @@ class TestExceptionContext(unittest.TestCase):
             except RuntimeError:
                 self.assertEqual(history, [])
 
-        with self.subTest("No callback without exceptions"):
+        with self.subTest("No callback without exceptions; combining is ok"):
             history = []
-            with ExceptionExitStack() as stack:
-                stack.callback(its_historical, history, "we shouldn't see this")
+            msg = "but we should see this"
+            with ExceptionExitStack() as exc_stack, contextlib.ExitStack() as reg_stack:
+                exc_stack.callback(its_historical, history, "we shouldn't see this")
                 # because there's no exception here
-            self.assertEqual(history, [])
+                reg_stack.callback(its_historical, history, msg)
+            self.assertEqual(history, [msg])
 
     def test_on_error(self):
         with self.subTest("Callback on all exceptions when no types are specified"):
@@ -97,6 +99,7 @@ class TestExceptionContext(unittest.TestCase):
 
         with self.subTest("No callback without exceptions"):
             history = []
+            msg = "but we should see this"
             with contextlib.ExitStack() as stack:
                 stack.enter_context(
                     on_error(
@@ -107,7 +110,8 @@ class TestExceptionContext(unittest.TestCase):
                     )
                 )
                 # because there's no exception here
-            self.assertEqual(history, [])
+                stack.callback(its_historical, history, msg)
+            self.assertEqual(history, [msg])
 
 
 if __name__ == "__main__":
