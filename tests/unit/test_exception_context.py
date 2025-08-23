@@ -1,6 +1,7 @@
+import contextlib
 import unittest
 
-from pyiron_snippets.exception_context import ExceptionExitStack
+from pyiron_snippets.exception_context import ExceptionExitStack, on_error
 
 
 def its_historical(history: list[str], message: str) -> None:
@@ -40,6 +41,71 @@ class TestExceptionContext(unittest.TestCase):
             history = []
             with ExceptionExitStack() as stack:
                 stack.callback(its_historical, history, "we shouldn't see this")
+                # because there's no exception here
+            self.assertEqual(history, [])
+
+    def test_on_error(self):
+        with self.subTest("Callback on all exceptions when no types are specified"):
+            history = []
+            msg = "with no types"
+            try:
+                with contextlib.ExitStack() as stack:
+                    stack.enter_context(
+                        on_error(
+                            its_historical,
+                            None,
+                            history,
+                            message=msg,
+                        )
+                    )
+                    raise RuntimeError("Application error")
+            except RuntimeError:
+                self.assertEqual(history, [msg])
+
+        with self.subTest("Callback on matching exception with specifier"):
+            history = []
+            msg = "with matching type"
+            try:
+                with contextlib.ExitStack() as stack:
+                    stack.enter_context(
+                        on_error(
+                            its_historical,
+                            RuntimeError,
+                            history,
+                            message=msg,
+                        )
+                    )
+                    raise RuntimeError("Application error")
+            except RuntimeError:
+                self.assertEqual(history, [msg])
+
+        with self.subTest("No callback on mis-matching exception with specifier(s)"):
+            history = []
+            try:
+                with contextlib.ExitStack() as stack:
+                    stack.enter_context(
+                        on_error(
+                            its_historical,
+                            (TypeError, ValueError),
+                            history,
+                            message="with mis-matching types",
+                        )
+                    )
+                    raise RuntimeError("Application error")
+            except RuntimeError:
+                self.assertEqual(history, [])
+
+        with self.subTest("No callback without exceptions"):
+            history = []
+            with contextlib.ExitStack() as stack:
+                stack.enter_context(
+                    on_error(
+                        its_historical,
+                        (TypeError, ValueError),
+                        history,
+                        message="we shouldn't see this",
+                    )
+                )
                 # because there's no exception here
             self.assertEqual(history, [])
 
