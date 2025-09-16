@@ -7,6 +7,7 @@ import warnings
 
 from pyiron_snippets.deprecate import deprecate
 
+
 class ImportAlarmError(ImportError):
     """To be raised instead of a warning when a package is missing."""
 
@@ -48,10 +49,10 @@ class ImportAlarm:
 
     @deprecate(_fail_on_warning="use fail_on_warning instead")
     def __init__(
-            self,
-            message=None,
-            raise_exception: bool = False,
-            _fail_on_warning: bool = False,
+        self,
+        message=None,
+        raise_exception: bool = False,
+        _fail_on_warning: bool = False,
     ):
         """
         Initialize message value.
