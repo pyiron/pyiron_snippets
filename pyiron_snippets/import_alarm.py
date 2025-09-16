@@ -7,7 +7,7 @@ import warnings
 
 
 class ImportAlarmError(ImportError):
-    """To be raised in addition to warning under test conditions"""
+    """To be raised instead of a warning when a package is missing."""
 
 
 class ImportAlarm:
@@ -45,19 +45,26 @@ class ImportAlarm:
     >>> import_alarm.warn_if_failed()
     """
 
-    def __init__(self, message=None, _fail_on_warning: bool = False):
+    def __init__(
+        self,
+        message=None,
+        raise_exception: bool = False,
+    ):
         """
         Initialize message value.
+
+        If a `raise_exception` is `True`, raise a :class:`.ImportAlarmError`, which is a subclass of `ImportError`.
 
         Args:
             message (str): What to say alongside your ImportError when the decorated
             function is called. (Default is None, which says nothing and raises no
             error.)
+            raise_exception (bool, optional): raise an exception instead of issuing a warning
         """
         self.message = message
         # Catching warnings in tests can be janky, so instead open a flag for failing
         # instead.
-        self._fail_on_warning = _fail_on_warning
+        self.raise_exception = raise_exception
 
     def __call__(self, func):
         return self.wrapper(func)
@@ -78,7 +85,7 @@ class ImportAlarm:
         """
         if self.message is not None:
             warnings.warn(self.message, category=ImportWarning, stacklevel=2)
-            if self._fail_on_warning:
+            if self.raise_exception:
                 raise ImportAlarmError(self.message)
 
     def __enter__(self):
