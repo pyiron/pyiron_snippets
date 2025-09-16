@@ -6,13 +6,13 @@ from pyiron_snippets.import_alarm import ImportAlarm, ImportAlarmError
 class TestImportAlarm(unittest.TestCase):
 
     def test_instance(self):
-        no_alarm = ImportAlarm(_fail_on_warning=True)
+        no_alarm = ImportAlarm(raise_exception=True)
 
         @no_alarm
         def add_one(x):
             return x + 1
 
-        yes_alarm = ImportAlarm("Here is a message", _fail_on_warning=True)
+        yes_alarm = ImportAlarm("Here is a message", raise_exception=True)
 
         @yes_alarm
         def subtract_one(x):
@@ -37,11 +37,11 @@ class TestImportAlarm(unittest.TestCase):
             subtract_one(0)
 
     def test_context(self):
-        with ImportAlarm("Working import", _fail_on_warning=True) as alarm_working:
+        with ImportAlarm("Working import", raise_exception=True) as alarm_working:
             # Suppose all the imports here pass fine
             pass
 
-        with ImportAlarm("Broken import", _fail_on_warning=True) as alarm_broken:
+        with ImportAlarm("Broken import", raise_exception=True) as alarm_broken:
             raise ImportError("Suppose a package imported here is not available")
 
         @alarm_working
