@@ -1,10 +1,9 @@
 [build-system]
 requires = [
-    "setuptools>=68.0.0",    # ensure build_meta exists under 3.13
-    "versioneer[toml]==0.29",
-    "wheel",
+    "hatchling==1.27.0",
+    "hatch-vcs==0.5.0",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
 
 [project]
 name = "pyiron_snippets"
@@ -55,6 +54,28 @@ attr = "pyiron_snippets.__version__"
 tests = [
     "cloudpickle==3.1.1",
 ]
+
+[tool.hatch.build]
+include = [
+    "pyiron_snippets"
+]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "pyiron_snippets/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "pyiron_snippets"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "pyiron_snippets"
+]
+
+[tool.hatch.version]
+source = "vcs"
+path = "pyiron_snippets/_version.py"
 
 [tool.ruff]
 exclude = ["docs", "notebooks", "setup.py", "_version.py"]
