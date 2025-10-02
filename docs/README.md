@@ -95,6 +95,8 @@ A variant of [`contextlib.ExitStack`](https://docs.python.org/3/library/contextl
 
 ```
 
+The module also provides a wrapper, `on_error`, for use directly with `contextlib.ExitStack`.
+
 ## Factory
 
 Make dynamic classes that are still pickle-able
