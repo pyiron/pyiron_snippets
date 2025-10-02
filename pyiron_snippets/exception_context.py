@@ -193,7 +193,7 @@ def on_error(
         exception_types = (exceptions,)
     else:
         if not all(
-                isinstance(e, type) and issubclass(e, Exception) for e in exceptions
+            isinstance(e, type) and issubclass(e, Exception) for e in exceptions
         ):
             raise ValueError(
                 f"Invalid exception type(s) provided. Expected only subclasses of "
