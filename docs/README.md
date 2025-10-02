@@ -204,6 +204,25 @@ ERROR: name 'magic' is not defined
 
 Configures the logger and writes to `pyiron.log`
 
+## Retrieve
+
+Tools for retrieving objects from strings.
+Particularly useful when objects or references are serialized by reference to their library location.
+
+```python
+>>> from pyiron_snippets import retrieve
+>>> ThreadPoolExecutor = retrieve.import_from_string(
+...     "concurrent.futures.ThreadPoolExecutor"
+... )
+>>> with ThreadPoolExecutor(max_workers=2) as executor:
+...     future = executor.submit(pow, 2, 3)
+...     print(future.result())
+8
+
+```
+   
+Includes an extra tool, `get_importable_string_from_string_reduction` for singleton-pattern string reductions.     
+
 ## Retry
 
 If at first you don't succeed
