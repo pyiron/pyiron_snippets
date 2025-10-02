@@ -76,7 +76,9 @@ class ExceptionExitStack(contextlib.ExitStack):
 
     def __init__(self, *exceptions: type[Exception]):
         super().__init__()
-        self._exception_types = [Exception] if len(exceptions) == 0 else exceptions
+        self._exception_types: tuple[type[Exception], ...] = (
+            (Exception,) if len(exceptions) == 0 else exceptions
+        )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if any(isinstance(exc_val, e) for e in self._exception_types):
