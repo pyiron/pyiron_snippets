@@ -5,12 +5,13 @@ Helper functions for managing the relationship between strings and imports.
 from __future__ import annotations
 
 import importlib
-from typing import Any
+
 
 class StringNotImportableError(ImportError): ...
 
 
-def import_from_string(library_path: str) -> Any:
+def import_from_string(library_path: str) -> object:
+
     split_path = library_path.split(".", 1)
     if len(split_path) == 1:
         module_name, path = split_path[0], ""
