@@ -16,7 +16,17 @@ def import_from_string(library_path: str) -> Any:
         module_name, path = split_path[0], ""
     else:
         module_name, path = split_path
-    obj = importlib.import_module(module_name)
+
+    try:
+        obj = importlib.import_module(module_name)
+    except ModuleNotFoundError as e:
+        raise ModuleNotFoundError(
+            f"The topmost entry of {library_path} could not be found. The most likely "
+            f"causes of this problem are a typo, or that the module is not yet in your "
+            f"system's PYTHONPATH. The latter can be checked from inside python with "
+            f"`import sys; print(sys.path)`."
+        ) from e
+
     for k in path.split("."):
         try:
             obj = getattr(obj, k)
