@@ -75,6 +75,13 @@ class ExceptionExitStack(contextlib.ExitStack):
     """
 
     def __init__(self, *exceptions: type[Exception]):
+        if not all(
+            isinstance(e, type) and issubclass(e, Exception) for e in exceptions
+        ):
+            raise ValueError(
+                f"Invalid exception type(s) provided. Expected only subclasses of "
+                f"`Exception`, but got {exceptions}"
+            )
         super().__init__()
         self._exception_types: tuple[type[Exception], ...] = (
             (Exception,) if len(exceptions) == 0 else exceptions
@@ -185,6 +192,13 @@ def on_error(
     elif isinstance(exceptions, type) and issubclass(exceptions, Exception):
         exception_types = (exceptions,)
     else:
+        if not all(
+                isinstance(e, type) and issubclass(e, Exception) for e in exceptions
+        ):
+            raise ValueError(
+                f"Invalid exception type(s) provided. Expected only subclasses of "
+                f"`Exception`, but got {exceptions}"
+            )
         exception_types = tuple(exceptions)
 
     try:

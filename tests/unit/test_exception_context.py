@@ -46,6 +46,10 @@ class TestExceptionContext(unittest.TestCase):
                 reg_stack.callback(its_historical, history, msg)
             self.assertEqual(history, [msg])
 
+        with self.subTest("Clean error message on garbage input"):
+            with self.assertRaises(ValueError):
+                ExceptionExitStack("these", "aren't", "exceptions")
+
     def test_on_error(self):
         with self.subTest("Callback on all exceptions when no types are specified"):
             history = []
@@ -112,6 +116,18 @@ class TestExceptionContext(unittest.TestCase):
                 # because there's no exception here
                 stack.callback(its_historical, history, msg)
             self.assertEqual(history, [msg])
+
+        with self.subTest("Clean error message on garbage input"):
+            history = []
+            with self.assertRaises(ValueError), contextlib.ExitStack() as stack:
+                stack.enter_context(
+                    on_error(
+                        its_historical,
+                        "this is not an exception type",
+                        history,
+                        message="we shouldn't see this",
+                    )
+                )
 
 
 if __name__ == "__main__":
