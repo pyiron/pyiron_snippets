@@ -178,7 +178,7 @@ def on_error(
     exception_types: tuple[type[Exception], ...]
     if exceptions is None:
         exception_types = (Exception,)
-    elif isinstance(exceptions, type) and issubclass(exceptions, BaseException):
+    elif isinstance(exceptions, type) and issubclass(exceptions, Exception):
         exception_types = (exceptions,)
     else:
         exception_types = tuple(exceptions)
