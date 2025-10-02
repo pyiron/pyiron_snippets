@@ -11,7 +11,26 @@ class StringNotImportableError(ImportError): ...
 
 
 def import_from_string(library_path: str) -> object:
+    """
+    Import an object using a string of its python library location.
 
+    Args:
+        library_path (str): The full module path to the desired object.
+
+    Returns:
+        (object): The imported object.
+
+    Example:
+        >>> from pyiron_snippets import retrieve
+        >>> ThreadPoolExecutor = retrieve.import_from_string(
+        ...     "concurrent.futures.ThreadPoolExecutor"
+        ... )
+        >>> with ThreadPoolExecutor(max_workers=2) as executor:
+        ...     future = executor.submit(pow, 2, 3)
+        ...     print(future.result())
+        8
+
+    """
     split_path = library_path.split(".", 1)
     if len(split_path) == 1:
         module_name, path = split_path[0], ""
