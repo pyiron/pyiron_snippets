@@ -60,12 +60,7 @@ def import_from_string(library_path: str) -> object:
             # This can be necessary of an __init__.py is empty and nothing else has
             # referenced the module yet
             current_path = f"{obj.__name__}.{k}"
-            try:
-                obj = importlib.import_module(current_path)
-            except ImportError as e:
-                raise AttributeError(
-                    f"module '{obj.__name__}' has no attribute '{k}'"
-                ) from e
+            obj = importlib.import_module(current_path)
     return obj
 
 
