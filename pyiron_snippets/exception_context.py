@@ -175,6 +175,7 @@ def on_error(
         ['but we should see this']
     """
 
+    exception_types: tuple[type[Exception], ...]
     if exceptions is None:
         exception_types = (Exception,)
     elif isinstance(exceptions, type) and issubclass(exceptions, BaseException):
