@@ -7,7 +7,7 @@ from __future__ import annotations
 import importlib
 from typing import Any
 
-from bagofholding.exceptions import StringNotImportableError
+class StringNotImportableError(ImportError): ...
 
 
 def import_from_string(library_path: str) -> Any:
