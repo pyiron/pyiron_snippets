@@ -51,6 +51,8 @@ def import_from_string(library_path: str) -> object:
         ) from e
 
     for k in path.split("."):
+        if k == "":
+            break
         try:
             obj = getattr(obj, k)
         except AttributeError:
