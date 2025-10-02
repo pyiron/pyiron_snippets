@@ -1,7 +1,8 @@
-# Dynamically updates the pyproject.toml for release to pypi
-# On PRs just lets you preview the new toml
-# On actual publication events, publishes to pypi
-name: Release (and/or preview)
+# This runs jobs which pyiron modules should run on release
+# This job runs on pull requests and does not actually publish anything to pypi
+# It is useful for debugging new build recipes
+# To actually release, change the `on` and `publish-to-pypi` fields
+name: Release
 
 on:
   pull_request:
@@ -9,9 +10,8 @@ on:
     types: [ published ]
 
 jobs:
-  pyproject-flow:
-    uses: pyiron/actions/.github/workflows/pyproject-release.yml@actions-4.0.8
+  hatchling-release:
+    uses: pyiron/actions/.github/workflows/hatch-release.yml@actions-4.0.8
     secrets: inherit
     with:
-      semantic-upper-bound: 'minor'
       publish-to-pypi: ${{ github.event_name == 'release' && github.event.action == 'published' }}
