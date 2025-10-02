@@ -81,7 +81,9 @@ class ExceptionExitStack(contextlib.ExitStack):
         )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if any(isinstance(exc_val, e) for e in self._exception_types):
+        if exc_val is not None and any(
+            isinstance(exc_val, e) for e in self._exception_types
+        ):
             return super().__exit__(exc_type, exc_val, exc_tb)
         self.pop_all()
 
