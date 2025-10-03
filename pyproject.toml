@@ -1,10 +1,9 @@
 [build-system]
 requires = [
-    "setuptools>=68.0.0",    # ensure build_meta exists under 3.13
-    "versioneer[toml]==0.29",
-    "wheel",
+    "hatchling==1.27.0",
+    "hatch-vcs==0.5.0",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
 
 [project]
 name = "pyiron_snippets"
@@ -13,9 +12,11 @@ readme = "docs/README.md"
 keywords = [ "pyiron",]
 requires-python = ">=3.11, <3.14"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: BSD License",
+    "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.11",
@@ -38,23 +39,32 @@ Homepage = "https://github.com/pyiron/pyiron_snippets"
 Documentation = "https://pyiron-snippets.readthedocs.io"
 Repository = "https://github.com/pyiron/pyiron_snippets"
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440-pre"
-versionfile_source = "pyiron_snippets/_version.py"
-parentdir_prefix = "pyiron_snippets"
-tag_prefix = "pyiron_snippets-"
-
-[tool.setuptools.packages.find]
-include = [ "pyiron_snippets*",]
-
-[tool.setuptools.dynamic.version]
-attr = "pyiron_snippets.__version__"
-
 [project.optional-dependencies]
 tests = [
     "cloudpickle==3.1.1",
 ]
+
+[tool.hatch.build]
+include = [
+    "pyiron_snippets"
+]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "pyiron_snippets/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "pyiron_snippets"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "pyiron_snippets"
+]
+
+[tool.hatch.version]
+source = "vcs"
+path = "pyiron_snippets/_version.py"
 
 [tool.ruff]
 exclude = ["docs", "notebooks", "setup.py", "_version.py"]
