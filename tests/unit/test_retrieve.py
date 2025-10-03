@@ -120,6 +120,13 @@ class TestImportFromString(unittest.TestCase):
 
         self.assertEqual(result, Path.exists)
 
+    def test_nonsense(self):
+        with self.assertRaises(ValueError):
+            retrieve.import_from_string("")
+
+        with self.assertRaises(ValueError):
+            retrieve.import_from_string(42)
+
 
 class TestGetImportableStringFromStringReduction(unittest.TestCase):
     """Test cases for get_importable_string_from_string_reduction function."""
