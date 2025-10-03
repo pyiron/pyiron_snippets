@@ -37,19 +37,6 @@ Homepage = "https://github.com/pyiron/pyiron_snippets"
 Documentation = "https://pyiron-snippets.readthedocs.io"
 Repository = "https://github.com/pyiron/pyiron_snippets"
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440-pre"
-versionfile_source = "pyiron_snippets/_version.py"
-parentdir_prefix = "pyiron_snippets"
-tag_prefix = "pyiron_snippets-"
-
-[tool.setuptools.packages.find]
-include = [ "pyiron_snippets*",]
-
-[tool.setuptools.dynamic.version]
-attr = "pyiron_snippets.__version__"
-
 [project.optional-dependencies]
 tests = [
     "cloudpickle==3.1.1",
