@@ -20,15 +20,15 @@ To qualify for inclusion, a snippet must not have any dependencies outside the p
 
 # Summary
 
-The snippets may have more functionality that this -- taking a look at the test suite is the best way to get an exhaustive sense of their functionality -- but these examples will give you the gist of things.
+Note that each snippet may have more functionality than shown in this readme -- taking a look at the source code and test suite is the best way to get an exhaustive sense of their capability -- but these examples will give you a sense of when each snippet is useful.
 
 ## Colors
 
 Just a shortcut to the `seaborn.color_palette()` of colors in hex:
 
 ```python
->>> from pyiron_snippets.colors import SeabornColors
->>> SeabornColors.white
+>>> from pyiron_snippets import colors
+>>> colors.SeabornColors.white
 '#ffffff'
 
 ```
@@ -38,9 +38,9 @@ Just a shortcut to the `seaborn.color_palette()` of colors in hex:
 Easily indicate that some functionality is being deprecated
 
 ```python
->>> from pyiron_snippets.deprecate import deprecate
+>>> from pyiron_snippets import deprecate
 >>>
->>> @deprecate(message="Use `bar(a, b)` instead", version="0.5.0")
+>>> @deprecate.deprecate(message="Use `bar(a, b)` instead", version="0.5.0")
 ... def foo(a, b):
 ...     pass
 >>> 
@@ -56,9 +56,9 @@ Raises a warning like `DeprecationWarning: __main__.foo is deprecated: Use bar(a
 A dictionary that allows dot-access. Has `.items()` etc.
 
 ```python
->>> from pyiron_snippets.dotdict import DotDict
+>>> from pyiron_snippets import dotdict
 >>>
->>> d = DotDict({"a": 1})
+>>> d = dotdict.DotDict({"a": 1})
 >>> d.b = 2
 >>> print(d.a, d.b)
 1 2
@@ -73,7 +73,7 @@ Make dynamic classes that are still pickle-able
 >>> from abc import ABC
 >>> import pickle
 >>>
->>> from pyiron_snippets.factory import classfactory
+>>> from pyiron_snippets import factory
 >>>
 >>> class HasN(ABC):
 ...     '''Some class I want to make dynamically subclass.'''
@@ -86,7 +86,7 @@ Make dynamic classes that are still pickle-able
 ...         self.x = x
 ...         self.y = y
 >>>
->>> @classfactory
+>>> @factory.classfactory
 ... def has_n_factory(n, s="wrapped_function", /):
 ...     return (
 ...         f"{HasN.__name__}{n}{s}",  # New class name
@@ -115,9 +115,9 @@ Make dynamic classes that are still pickle-able
 Shortcuts for filesystem manipulation
 
 ```python
->>> from pyiron_snippets.files import DirectoryObject
+>>> from pyiron_snippets import files
 >>>
->>> d = DirectoryObject("some_dir")
+>>> d = files.DirectoryObject("some_dir")
 >>> d.write(file_name="my_filename.txt", content="Some content")
 >>> d.file_exists("my_filename.txt")
 True
@@ -131,9 +131,9 @@ True
 A meta-class introducing a `__post__` dunder which runs after the `__init__` of _everything_ in the MRO.
 
 ```python
->>> from pyiron_snippets.has_post import HasPost
+>>> from pyiron_snippets import has_post
 >>>
->>> class Foo(metaclass=HasPost):
+>>> class Foo(metaclass=has_post.HasPost):
 ...     def __init__(self, x=0):
 ...         self.x = x
 ...         print(f"Foo.__init__: x = {self.x}")
@@ -163,14 +163,14 @@ Honestly, try thinking if there's another way to solve your problem; this is a d
 Fail gracefully when optional dependencies are missing for (optional) functionality.
 
 ```python
->>> from pyiron_snippets.import_alarm import ImportAlarm
+>>> from pyiron_snippets import import_alarm
 >>>
->>> with ImportAlarm(
+>>> with import_alarm.ImportAlarm(
 ...     "Some functionality unavailable: `magic` dependency missing"
 ... ) as my_magic_alarm:
 ...     import magic
 >>>
->>> with ImportAlarm("This warning won't show up") as datetime_alarm:
+>>> with import_alarm.ImportAlarm("This warning won't show up") as datetime_alarm:
 ...     import datetime
 >>>
 >>> class Foo:
@@ -230,7 +230,7 @@ If at first you don't succeed
 ```python
 >>> from time import time
 >>>
->>> from pyiron_snippets.retry import retry
+>>> from pyiron_snippets import retry
 >>>
 >>> def at_most_three_seconds():
 ...     t = int(time())
@@ -238,7 +238,7 @@ If at first you don't succeed
 ...         raise ValueError("Not yet!")
 ...     return t
 >>>
->>> retry(at_most_three_seconds, msg="Tried and failed...", error=ValueError) % 3
+>>> retry.retry(at_most_three_seconds, msg="Tried and failed...", error=ValueError) % 3
 0
 
 ```
@@ -251,9 +251,9 @@ Depending on the system clock at invokation, this simple example may give warnin
 A metaclass for the [singleton pattern](https://en.wikipedia.org/wiki/Singleton_pattern).
 
 ```python
->>> from pyiron_snippets.singleton import Singleton
+>>> from pyiron_snippets import singleton
 >>>
->>> class Foo(metaclass=Singleton):
+>>> class Foo(metaclass=singleton.Singleton):
 ...     pass
 >>>
 >>> foo1 = Foo()
