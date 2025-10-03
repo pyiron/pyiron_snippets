@@ -32,7 +32,7 @@ def import_from_string(library_path: str) -> object:
 
     """
     if (not isinstance(library_path, str)) or len(library_path) == 0:
-        raise ValueError(f"Expected a non-empty string, got '{library_path}' instead.")
+        raise ValueError(f"Expected a non-empty string, got '{library_path}'  of type {type(library_path)} instead.")
 
     split_path = library_path.split(".", 1)
     if len(split_path) == 1:
