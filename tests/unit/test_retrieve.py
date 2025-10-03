@@ -138,10 +138,11 @@ class TestGetImportableStringFromStringReduction(unittest.TestCase):
         obj = SomeClass()
         # If we just provide the class name, it should scope with module
         result = retrieve.get_importable_string_from_string_reduction("SomeClass", obj)
-        self.assertEqual(
+        self.assertIn(
             result,
-            "unit.test_retrieve.SomeClass",
-            msg="Note that the unit test folder has an __init__.py file, and is thus correctly interpreted as part of the module path",
+            ["unit.test_retrieve.SomeClass", "test_retrieve.SomeClass"],
+            msg="Note that the unit test folder has an __init__.py file, and is may "
+            "be interpreted as part of the module path, so either result is possible",
         )
 
     def test_singleton_reduction(self):
