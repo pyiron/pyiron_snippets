@@ -20,7 +20,7 @@ To qualify for inclusion, a snippet must not have any dependencies outside the p
 
 # Summary
 
-The snippets may have more functionality that this -- taking a look at the test suite is the best way to get an exhaustive sense of their functionality -- but these examples will give you the gist of things.
+Note that each snippet may have more functionality than shown in this readme -- taking a look at the source code and test suite is the best way to get an exhaustive sense of their capability -- but these examples will give you a sense of when each snippet is useful.
 
 ## Colors
 
