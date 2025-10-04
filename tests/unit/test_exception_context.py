@@ -57,15 +57,12 @@ class TestExceptionContext(unittest.TestCase):
             history = []
             msg = "with no types"
             try:
-                with contextlib.ExitStack() as stack:
-                    stack.enter_context(
-                        on_error(
-                            its_historical,
-                            None,
-                            history,
-                            message=msg,
-                        )
-                    )
+                with on_error(
+                    its_historical,
+                    None,
+                    history,
+                    message=msg,
+                ):
                     raise RuntimeError("Application error")
             except RuntimeError:
                 self.assertEqual(history, [msg])
@@ -90,15 +87,12 @@ class TestExceptionContext(unittest.TestCase):
         with self.subTest("No callback on mis-matching exception with specifier(s)"):
             history = []
             try:
-                with contextlib.ExitStack() as stack:
-                    stack.enter_context(
-                        on_error(
-                            its_historical,
-                            (TypeError, ValueError),
-                            history,
-                            message="with mis-matching types",
-                        )
-                    )
+                with on_error(
+                    its_historical,
+                    (TypeError, ValueError),
+                    history,
+                    message="with mis-matching types",
+                ):
                     raise RuntimeError("Application error")
             except RuntimeError:
                 self.assertEqual(history, [])
