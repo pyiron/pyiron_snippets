@@ -95,7 +95,29 @@ A variant of [`contextlib.ExitStack`](https://docs.python.org/3/library/contextl
 
 ```
 
-The module also provides a wrapper, `on_error`, for use directly with `contextlib.ExitStack`.
+The module also provides a wrapper, `on_error`, which provides a more compact interface if you only have a single callback function (as in the examples above):
+
+```python
+>>> from pyiron_snippets import exception_context
+>>>
+>>> def its_historical(history: list[str], message: str) -> None:
+...     history.append(message)
+>>>
+>>> history = []
+>>>
+>>> try:
+...     with exception_context.on_error(
+...         its_historical, 
+...         RuntimeError, 
+...         history,
+...         "a more compact single-callback interface",
+...     ):
+...         raise RuntimeError("Application")
+... except RuntimeError:
+...     history
+['a more compact single-callback interface']
+
+```
 
 ## Factory
 
