@@ -65,6 +65,60 @@ A dictionary that allows dot-access. Has `.items()` etc.
 
 ```
 
+## Exception context
+
+A variant of [`contextlib.ExitStack`](https://docs.python.org/3/library/contextlib.html#contextlib.ExitStack) that only executes registered callbacks when an exception is raised, and only if that exception matches one of the specified exception types (or any exception, if types are not specified).
+
+```python
+>>> from pyiron_snippets import exception_context
+>>>
+>>> def its_historical(history: list[str], message: str) -> None:
+...     history.append(message)
+>>>
+>>> history = []
+>>> try:
+...     with exception_context.ExceptionExitStack(RuntimeError) as stack:
+...         _ = stack.callback(its_historical, history, "with matching type")
+...         raise RuntimeError("Application error")
+... except RuntimeError:
+...     history
+['with matching type']
+
+>>> history = []
+>>> try:
+...     with exception_context.ExceptionExitStack(TypeError, ValueError) as stack:
+...         _ = stack.callback(its_historical, history, "with mis-matching types")
+...         raise RuntimeError("Application error")
+... except RuntimeError:
+...     history
+[]
+
+```
+
+The module also provides a wrapper, `on_error`, which provides a more compact interface if you only have a single callback function (as in the examples above):
+
+```python
+>>> from pyiron_snippets import exception_context
+>>>
+>>> def its_historical(history: list[str], message: str) -> None:
+...     history.append(message)
+>>>
+>>> history = []
+>>>
+>>> try:
+...     with exception_context.on_error(
+...         its_historical, 
+...         RuntimeError, 
+...         history,
+...         "a more compact single-callback interface",
+...     ):
+...         raise RuntimeError("Application")
+... except RuntimeError:
+...     history
+['a more compact single-callback interface']
+
+```
+
 ## Factory
 
 Make dynamic classes that are still pickle-able
