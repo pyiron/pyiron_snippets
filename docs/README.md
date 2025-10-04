@@ -70,14 +70,14 @@ A dictionary that allows dot-access. Has `.items()` etc.
 A variant of [`contextlib.ExitStack`](https://docs.python.org/3/library/contextlib.html#contextlib.ExitStack) that only executes registered callbacks when an exception is raised, and only if that exception matches one of the specified exception types (or any exception, if types are not specified).
 
 ```python
->>> from pyiron_snippets.exception_context import ExceptionExitStack
+>>> from pyiron_snippets import exception_context
 >>>
 >>> def its_historical(history: list[str], message: str) -> None:
 ...     history.append(message)
 >>>
 >>> history = []
 >>> try:
-...     with ExceptionExitStack(RuntimeError) as stack:
+...     with exception_context.ExceptionExitStack(RuntimeError) as stack:
 ...         _ = stack.callback(its_historical, history, "with matching type")
 ...         raise RuntimeError("Application error")
 ... except RuntimeError:
@@ -86,7 +86,7 @@ A variant of [`contextlib.ExitStack`](https://docs.python.org/3/library/contextl
 
 >>> history = []
 >>> try:
-...     with ExceptionExitStack(TypeError, ValueError) as stack:
+...     with exception_context.ExceptionExitStack(TypeError, ValueError) as stack:
 ...         _ = stack.callback(its_historical, history, "with mis-matching types")
 ...         raise RuntimeError("Application error")
 ... except RuntimeError:
