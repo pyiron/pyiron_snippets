@@ -4,6 +4,15 @@ import warnings
 from pyiron_snippets.deprecate import deprecate, deprecate_soon
 
 
+class ToGiveAQualname:
+    content = "this is the string"
+
+    @staticmethod
+    @deprecate(bar=f"Instead of {content}, we want to see a string")
+    def foo(bar=None, baz=None):
+        pass
+
+
 class TestDeprecator(unittest.TestCase):
     def test_deprecate(self):
         """Function decorated with `deprecate` should raise a warning."""
@@ -124,6 +133,15 @@ class TestDeprecator(unittest.TestCase):
             foo(bar=True)
             food(baz=True)
         self.assertEqual(len(w), 2, "Not all warnings preserved.")
+
+    def test_warning_reference(self):
+        with warnings.catch_warnings(record=True) as w:
+            ToGiveAQualname.foo(bar=True)
+            self.assertIn(
+                f"{ToGiveAQualname.foo.__module__}.{ToGiveAQualname.foo.__qualname__}",
+                str(w[0].message),
+                msg="Ensure full reference to function appears in warning.",
+            )
 
 
 if __name__ == "__main__":
