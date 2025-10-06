@@ -146,7 +146,7 @@ class Deprecator:
                 if kw in self.arguments:
                     warnings.warn(
                         message_format.format(
-                            "{function.__module__}.{function.__name__}({kw}={kwargs[kw]})"
+                            f"{function.__module__}.{function.__name__}({kw}={kwargs[kw]})"
                         ),
                         category=self.category,
                         stacklevel=2,
