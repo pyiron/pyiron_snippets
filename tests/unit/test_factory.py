@@ -321,7 +321,8 @@ class TestClassfactory(unittest.TestCase):
         )
 
         with self.assertRaises(
-            AttributeError, msg="The relevant factory function is only in <locals>"
+            (AttributeError, pickle.PicklingError),
+            msg="The relevant factory function is only in <locals>"
         ):
             pickle.dumps(bar)
 
