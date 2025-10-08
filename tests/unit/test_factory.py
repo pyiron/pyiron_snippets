@@ -294,7 +294,7 @@ class TestClassfactory(unittest.TestCase):
         self.assertEqual(1, foo.x, msg="Nothing should stop the factory from working")
         self.assertEqual(0, foo.y, msg="Nothing should stop the factory from working")
         with self.assertRaises(
-            AttributeError,
+            (AttributeError, pickle.PicklingError),
             msg="`internal_factory` is defined only locally inside the scope of "
             "another function, so we don't expect it to be pickleable whether it's "
             "a class factory or not!",
@@ -321,7 +321,8 @@ class TestClassfactory(unittest.TestCase):
         )
 
         with self.assertRaises(
-            AttributeError, msg="The relevant factory function is only in <locals>"
+            (AttributeError, pickle.PicklingError),
+            msg="The relevant factory function is only in <locals>",
         ):
             pickle.dumps(bar)
 
@@ -462,7 +463,7 @@ class TestClassfactory(unittest.TestCase):
             msg="Nothing stops us from creating and running these",
         )
         with self.assertRaises(
-            AttributeError,
+            (AttributeError, pickle.PicklingError),
             msg="We can't find the <locals> function defined to import and recreate"
             "the factory",
         ):
