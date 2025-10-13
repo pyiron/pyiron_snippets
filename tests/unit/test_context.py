@@ -10,4 +10,6 @@ class TestContextDirectory(unittest.TestCase):
         test_directory = "context"
         with set_directory(path=test_directory):
             context_directory = os.getcwd()
-        self.assertEqual(os.path.relpath(context_directory, current_directory), test_directory)
+        self.assertEqual(
+            os.path.relpath(context_directory, current_directory), test_directory
+        )
