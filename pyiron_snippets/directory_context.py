@@ -20,12 +20,12 @@ def set_directory(path: Path | str):
 
         >>> import os
         >>> os.getcwd()
-        '/home/user'
+        '/home/runner/work/pyiron_snippets/pyiron_snippets'
         >>> from pyiron_snippets.directory_context import set_directory
         >>> with set_directory("context"):
         ...     os.getcwd()
-        '/home/user/context'
-       
+        '/home/runner/work/pyiron_snippets/pyiron_snippets/context'
+
     """
     origin = Path().absolute()
     try:
