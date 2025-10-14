@@ -16,15 +16,14 @@ def set_directory(path: Path | str):
             If it does not exist, it will be created.
 
     Examples:
-        Change the directory to the path "context" within the context:
+        Change the directory to the path "tmp" within the context:
 
         >>> import os
-        >>> os.getcwd()
-        '/home/runner/work/pyiron_snippets/pyiron_snippets'
         >>> from pyiron_snippets.directory_context import set_directory
-        >>> with set_directory("context"):
-        ...     os.getcwd()
-        '/home/runner/work/pyiron_snippets/pyiron_snippets/context'
+        >>> directory_before_context_is_applied = os.getcwd()
+        >>> with set_directory("tmp"):
+        ...     os.path.relpath(os.getcwd(), directory_before_context_is_applied)
+        'tmp'
 
     """
     origin = Path().absolute()
