@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from pyiron_snippets.context import set_directory
+from pyiron_snippets.directory_context import set_directory
 
 
 class TestContextDirectory(unittest.TestCase):
@@ -13,3 +13,7 @@ class TestContextDirectory(unittest.TestCase):
         self.assertEqual(
             os.path.relpath(context_directory, current_directory), test_directory
         )
+
+
+if __name__ == "__main__":
+    unittest.main()
