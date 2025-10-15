@@ -51,6 +51,22 @@ Easily indicate that some functionality is being deprecated
 Raises a warning like `DeprecationWarning: __main__.foo is deprecated: Use bar(a, b) instead. It is not guaranteed to be in service in vers. 0.5.0 foo(1, 2)`
 
 
+## Directory context
+
+A context manager that changes the current working directory to the given path upon entering the context and reverts to the original directory upon exiting. 
+If the specified path does not exist, it is created.
+
+```python
+>>> import os
+>>> from pyiron_snippets.directory_context import set_directory
+>>> directory_before_context_is_applied = os.getcwd()
+>>> with set_directory("tmp"):
+...     os.path.relpath(os.getcwd(), directory_before_context_is_applied)
+'tmp'
+
+```
+
+
 ## DotDict
 
 A dictionary that allows dot-access. Has `.items()` etc.
