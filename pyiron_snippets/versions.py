@@ -1,0 +1,164 @@
+"""
+Tools for reliably and robustly extracting versioning info from python objects.
+"""
+
+from __future__ import annotations
+
+import dataclasses
+import importlib
+import sys
+from collections.abc import Callable
+from types import ModuleType
+from typing import Any, TypeAlias
+
+
+@dataclasses.dataclass(frozen=True)
+class VersionInfo:
+    """
+    Immutable record of an object's module, qualified name, and module version.
+
+    This is useful for capturing provenance metadata about classes and instances,
+    e.g. for serialization or reproducibility tracking.
+
+    Attributes:
+        module: The dotted module path where the object's type is defined.
+        qualname: The qualified name of the object's type within its module. A None
+            qualname indicates that the object is itself a module.
+        version: The version string of the top-level package, or ``None`` if no version
+            could be determined.
+
+    Example:
+        >>> from pyiron_snippets import versions
+        >>>
+        >>> versions.VersionInfo.of(42)  # doctest: +ELLIPSIS
+        VersionInfo(module='builtins', qualname='int', version=...)
+    """
+
+    module: str
+    qualname: str | None
+    version: str | None
+
+    @property
+    def fully_qualified_name(self) -> str:
+        if self.qualname is None:
+            return self.module
+        return f"{self.module}.{self.qualname}"
+
+    @classmethod
+    def of(
+        cls,
+        obj: object,
+        version_scraping: VersionScrapingMap | None = None,
+        forbid_main: bool = False,
+        forbid_locals: bool = False,
+        require_version: bool = False,
+    ) -> VersionInfo:
+        """
+        Construct a :class:`VersionInfo` by introspecting *obj*.
+
+        If a `__module__` or `__qualname__` is immediately available, they are used,
+        otherwise the same fields are sought on the object's type.
+
+        Args:
+            obj: The object to introspect.
+            version_scraping: Optional mapping from top-level package names to
+                callables that return a version string (or ``None``). Used to
+                handle packages that don't expose ``__version__``.
+            forbid_main: If ``True``, raise :exc:`ValueError` when the module
+                is ``__main__``.
+            forbid_locals: If ``True``, raise :exc:`ValueError` when the
+                qualname contains ``<locals>`` (i.e. the type was defined
+                inside a function).
+            require_version: If ``True``, raise :exc:`ValueError` when no
+                version can be determined for the module.
+
+        Returns:
+            A new :class:`VersionInfo` instance.
+
+        Raises:
+            ValueError: If any of the ``forbid_*`` / ``require_*`` constraints
+                are violated.
+        """
+        module = get_module(obj)
+        if forbid_main and module == "__main__":
+            raise ValueError(f"Module for {obj} is __main__, which was forbidden.")
+
+        qualname = get_qualname(obj)
+        if forbid_locals and qualname is not None and "<locals>" in qualname:
+            raise ValueError(
+                f"Qualname for {obj} contains <locals>, which was forbidden."
+            )
+
+        version = get_version(module, version_scraping=version_scraping)
+        if require_version and version is None:
+            raise ValueError(
+                f"Version for {obj} (module {module}) could not be found, but was required."
+            )
+
+        return cls(module=module, qualname=qualname, version=version)
+
+
+def get_module(obj: Any) -> str:
+    if isinstance(obj, ModuleType):
+        return obj.__name__
+    try:
+        return obj.__module__ if hasattr(obj, "__module__") else type(obj).__module__
+    except AttributeError as e:
+        raise AttributeError(
+            f"Could not find a module on obj {obj} or type(obj) {type(obj)}."
+        ) from e
+
+
+def get_qualname(obj: Any) -> str | None:
+    if isinstance(obj, ModuleType):
+        return None
+    return obj.__qualname__ if hasattr(obj, "__qualname__") else type(obj).__qualname__
+
+
+VersionScraperType: TypeAlias = Callable[[str], str | None]
+VersionScrapingMap: TypeAlias = dict[str, VersionScraperType]
+
+
+def get_version(
+    module_name: str,
+    version_scraping: VersionScrapingMap | None = None,
+) -> str | None:
+    """
+    Given a module name, get its associated version (if any). By default, this simply
+    looks for the :attr:`__version__` attribute on the imported module.
+
+    For :mod:`builtins` this is just the python interpreter version.
+
+    Args:
+        module_name (str): The module to examine.
+        version_scraping (VersionScrapingMap | None): Since some modules may store
+            their version in other ways, this provides an optional map between module
+            names and callables to leverage for extracting that module's version.
+
+    Returns:
+        (str | None): The module's version as a string, if any can be found.
+
+    Warnings:
+        This imports the module in the process, so it is not "safe".
+    """
+    if module_name == "builtins":
+        return _python_version()
+
+    module_base = module_name.split(".")[0]
+    scraper = (version_scraping or {}).get(module_base, _scrape_version_attribute)
+    return scraper(module_base)
+
+
+def _scrape_version_attribute(module_name: str) -> str | None:
+    if module_name in sys.stdlib_module_names:
+        return _python_version()
+    module = importlib.import_module(module_name)
+    try:
+        return str(module.__version__)
+    except AttributeError:
+        return None
+
+
+def _python_version() -> str:
+    vi = sys.version_info
+    return f"{vi.major}.{vi.minor}.{vi.micro}"
