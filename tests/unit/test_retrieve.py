@@ -91,12 +91,10 @@ class TestImportFromString(unittest.TestCase):
 
         (test_pkg_dir / "__init__.py").write_text("")
 
-        submodule_content = textwrap.dedent(
-            """
+        submodule_content = textwrap.dedent("""
             class UnInitClass:
                 value = 42
-            """
-        ).strip()
+            """).strip()
         (test_pkg_dir / "submodule.py").write_text(submodule_content)
 
         try:
@@ -247,26 +245,18 @@ class TestIntegrationScenarios(unittest.TestCase):
         )
         (sub_pkg_dir / "__init__.py").write_text("")
 
-        (pkg_dir / "module1.py").write_text(
-            textwrap.dedent(
-                """
+        (pkg_dir / "module1.py").write_text(textwrap.dedent("""
                 class Class1:
                     value = 'from_module1'
-                """
-            ).strip()
-        )
+                """).strip())
 
-        (sub_pkg_dir / "module2.py").write_text(
-            textwrap.dedent(
-                """
+        (sub_pkg_dir / "module2.py").write_text(textwrap.dedent("""
                 class Class2:
                     value = 'from_module2'
         
                     class NestedClass:
                         nested_value = 'nested'
-                """
-            ).strip()
-        )
+                """).strip())
 
         try:
             result1 = retrieve.import_from_string("test_package_complex.Class1")
@@ -294,28 +284,20 @@ class TestIntegrationScenarios(unittest.TestCase):
         pkg_dir.mkdir(parents=True, exist_ok=True)
 
         (pkg_dir / "__init__.py").write_text("")
-        (pkg_dir / "module_a.py").write_text(
-            textwrap.dedent(
-                """
+        (pkg_dir / "module_a.py").write_text(textwrap.dedent("""
                 from .module_b import ClassB
         
                 class ClassA:
                     related = ClassB
                     value = 'A'
-                """
-            ).strip()
-        )
-        (pkg_dir / "module_b.py").write_text(
-            textwrap.dedent(
-                """
+                """).strip())
+        (pkg_dir / "module_b.py").write_text(textwrap.dedent("""
                 class ClassB:
                     value = 'B'
         
                 # Circular import:
                 from .module_a import ClassA
-                """
-            ).strip()
-        )
+                """).strip())
 
         try:
             with self.assertRaises(ImportError, msg="Circular imports never work"):
