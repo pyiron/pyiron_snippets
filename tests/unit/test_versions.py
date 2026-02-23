@@ -4,6 +4,7 @@ import dataclasses
 import os
 import sys
 import unittest
+from types import ModuleType
 from unittest import mock
 
 from pyiron_snippets.versions import (
@@ -26,6 +27,44 @@ def _dummy_function() -> None:
 PYTHON_VERSION = (
     f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 )
+
+
+class _SyntheticPackage:
+    """
+    Context manager that injects a synthetic package hierarchy into sys.modules
+    and cleans up on exit.
+
+    Usage::
+
+        with _SyntheticPackage({
+            "_fakepkg":          "1.0.0",
+            "_fakepkg.sub":      None,
+            "_fakepkg.sub.deep": "2.0.0",
+        }):
+            assert versions.get_version("_fakepkg.sub.deep") == "2.0.0"
+    """
+
+    def __init__(self, modules: dict[str, str | None]):
+        self._modules = modules
+        self._originals: dict[str, ModuleType | None] = {}
+
+    def __enter__(self):
+        for name, ver in self._modules.items():
+            self._originals[name] = sys.modules.get(name)
+            mod = ModuleType(name)
+            mod.__package__ = name.rsplit(".", 1)[0] if "." in name else name
+            if ver is not None:
+                mod.__version__ = ver
+            sys.modules[name] = mod
+        return self
+
+    def __exit__(self, *exc):
+        for name in reversed(list(self._modules)):
+            prev = self._originals[name]
+            if prev is None:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = prev
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +187,93 @@ class TestGetVersion(unittest.TestCase):
         """
         result = get_version("__main__")
         self.assertIsInstance(result, (str, type(None)))
+
+
+class TestGetVersionWalksModuleLevels(unittest.TestCase):
+    """get_version should return the deepest (most specific) version found."""
+
+    _HIERARCHY: dict[str, str | None] = {
+        "_fakepkg": "1.0.0",
+        "_fakepkg.mid": None,
+        "_fakepkg.mid.deep": "2.0.0",
+    }
+
+    def setUp(self):
+        self._ctx = _SyntheticPackage(self._HIERARCHY)
+        self._ctx.__enter__()
+
+    def tearDown(self):
+        self._ctx.__exit__(None, None, None)
+
+    def test_returns_deepest_version_when_present(self):
+        self.assertEqual(get_version("_fakepkg.mid.deep"), "2.0.0")
+
+    def test_walks_up_when_intermediate_has_no_version(self):
+        self.assertEqual(get_version("_fakepkg.mid"), "1.0.0")
+
+    def test_top_level_returns_own_version(self):
+        self.assertEqual(get_version("_fakepkg"), "1.0.0")
+
+
+class TestGetVersionWalkAllUnversioned(unittest.TestCase):
+    """When no level has a version, get_version should return None."""
+
+    def test_returns_none(self):
+        with _SyntheticPackage({"_nover": None, "_nover.sub": None}):
+            self.assertIsNone(get_version("_nover.sub"))
+
+
+class TestGetVersionWalkMiddleOnly(unittest.TestCase):
+    """When only an intermediate level has a version, that version wins."""
+
+    _HIERARCHY: dict[str, str | None] = {
+        "_midver": None,
+        "_midver.sub": "3.0.0",
+        "_midver.sub.leaf": None,
+    }
+
+    def test_leaf_walks_up_to_middle(self):
+        with _SyntheticPackage(self._HIERARCHY):
+            self.assertEqual(get_version("_midver.sub.leaf"), "3.0.0")
+
+    def test_middle_returns_own(self):
+        with _SyntheticPackage(self._HIERARCHY):
+            self.assertEqual(get_version("_midver.sub"), "3.0.0")
+
+    def test_top_returns_none(self):
+        with _SyntheticPackage(self._HIERARCHY):
+            self.assertIsNone(get_version("_midver"))
+
+
+class TestGetVersionWalkWithScrapingMap(unittest.TestCase):
+    """version_scraping keys should match at the corresponding recursion level."""
+
+    def test_scraper_used_at_matching_level(self):
+        with _SyntheticPackage({"_scr": None, "_scr.sub": None}):
+            scraping = {"_scr": lambda _: "99.0.0"}
+            self.assertEqual(
+                get_version("_scr.sub", version_scraping=scraping),
+                "99.0.0",
+            )
+
+    def test_submodule_scraper_takes_precedence(self):
+        with _SyntheticPackage({"_scr2": None, "_scr2.sub": None}):
+            scraping = {
+                "_scr2": lambda _: "1.0.0",
+                "_scr2.sub": lambda _: "2.0.0",
+            }
+            self.assertEqual(
+                get_version("_scr2.sub", version_scraping=scraping),
+                "2.0.0",
+            )
+
+    def test_dunder_version_at_leaf_beats_scraper_at_parent(self):
+        with _SyntheticPackage({"_scr3": None, "_scr3.sub": "5.0.0"}):
+            scraping = {"_scr3": lambda _: "1.0.0"}
+            self.assertEqual(
+                get_version("_scr3.sub", version_scraping=scraping),
+                "5.0.0",
+            )
 
 
 # ---------------------------------------------------------------------------

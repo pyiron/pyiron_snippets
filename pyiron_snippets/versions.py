@@ -124,13 +124,19 @@ def get_version(
     version_scraping: VersionScrapingMap | None = None,
 ) -> str | None:
     """
-    Given a module name, get its associated version (if any). By default, this simply
-    looks for the :attr:`__version__` attribute on the imported module.
+    Given a module name, get its associated version (if any) by iteratively checking
+    each module level for an available version. By default, this simply looks for the
+    :attr:`__version__` attribute on the imported module, but searching behaviour can
+    be customized with the :arg:`version_scraping` argument.
 
-    For :mod:`builtins` this is just the python interpreter version.
+    The first found version walking up the module path takes precedence over higher
+    versions, and the version scraping map entries take precedence over the default
+    :attr:`__version__` check at each step while walking.
+
+    For :mod:`builtins`, the python interpreter version is given.
 
     Args:
-        module_name (str): The module to examine.
+        module_name (str): The module to recursively examine.
         version_scraping (VersionScrapingMap | None): Since some modules may store
             their version in other ways, this provides an optional map between module
             names and callables to leverage for extracting that module's version.
@@ -144,9 +150,14 @@ def get_version(
     if module_name == "builtins":
         return _python_version()
 
-    module_base = module_name.split(".")[0]
-    scraper = (version_scraping or {}).get(module_base, _scrape_version_attribute)
-    return scraper(module_base)
+    scraper = (version_scraping or {}).get(module_name, _scrape_version_attribute)
+    scraped_version = scraper(module_name)
+
+    next_module = module_name.rsplit(".", maxsplit=1)[0]
+    if scraped_version is not None or next_module == module_name:
+        return scraped_version
+    else:
+        return get_version(next_module, version_scraping=version_scraping)
 
 
 def _scrape_version_attribute(module_name: str) -> str | None:
