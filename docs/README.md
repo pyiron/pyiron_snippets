@@ -332,3 +332,18 @@ A metaclass for the [singleton pattern](https://en.wikipedia.org/wiki/Singleton_
 True
 
 ```
+
+
+## Versions
+
+Tools for scraping the versions of python objects.
+
+There are multiple public utilities, but the main entry point is a dataclass for finding the relevant module version of an arbitrary object (including an instance).
+
+```python
+>>> from pyiron_snippets import versions
+>>> 
+>>> versions.VersionInfo.of(42)  # doctest: +ELLIPSIS
+VersionInfo(module='builtins', qualname='int', version=...)
+
+```
