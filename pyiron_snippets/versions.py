@@ -21,6 +21,30 @@ class VersionConstraints:
     forbid_locals: bool = False
     require_version: bool = False
 
+    @classmethod
+    def disambiguate(
+        cls,
+        constraints: VersionConstraints | None = None,
+        forbid_main: bool | None = None,
+        forbid_locals: bool | None = None,
+        require_version: bool | None = None,
+    ) -> VersionConstraints:
+        flags = (forbid_main, forbid_locals, require_version)
+        any_flag_set = any(f is not None for f in flags)
+
+        if constraints is not None:
+            if any_flag_set:
+                raise TypeError(
+                    "Cannot pass both constraints and individual constraint kwargs"
+                )
+        else:
+            constraints = cls(
+                forbid_main=forbid_main or False,
+                forbid_locals=forbid_locals or False,
+                require_version=require_version or False,
+            )
+        return constraints
+
 
 @dataclasses.dataclass(frozen=True)
 class VersionInfo:
@@ -113,19 +137,9 @@ class VersionInfo:
             ValueError: If any of the ``forbid_*`` / ``require_*`` constraints
                 are violated.
         """
-        flags = (forbid_main, forbid_locals, require_version)
-        any_flag_set = any(f is not None for f in flags)
-        if constraints is not None:
-            if any_flag_set:
-                raise TypeError(
-                    "Cannot pass both constraints and individual constraint kwargs"
-                )
-        else:
-            constraints = VersionConstraints(
-                forbid_main=forbid_main or False,
-                forbid_locals=forbid_locals or False,
-                require_version=require_version or False,
-            )
+        constraints = VersionConstraints.disambiguate(
+            constraints, forbid_main, forbid_locals, require_version
+        )
 
         module = get_module(obj)
         qualname = get_qualname(obj)
@@ -154,20 +168,9 @@ class VersionInfo:
         forbid_locals: bool | None = None,
         require_version: bool | None = None,
     ) -> None:
-        flags = (forbid_main, forbid_locals, require_version)
-        any_flag_set = any(f is not None for f in flags)
-
-        if constraints is not None:
-            if any_flag_set:
-                raise TypeError(
-                    "Cannot pass both constraints and individual constraint kwargs"
-                )
-        else:
-            constraints = VersionConstraints(
-                forbid_main=forbid_main or False,
-                forbid_locals=forbid_locals or False,
-                require_version=require_version or False,
-            )
+        constraints = VersionConstraints.disambiguate(
+            constraints, forbid_main, forbid_locals, require_version
+        )
 
         if constraints.forbid_main and "__main__" in self.module:
             raise ValueError(f"Found forbidden module '__main__' in module for {self}")
