@@ -125,6 +125,8 @@ class VersionInfo:
             version_scraping: Optional mapping from top-level package names to
                 callables that return a version string (or ``None``). Used to
                 handle packages that don't expose ``__version__``.
+            constraints: An optional dataclass for grouping the constraints together.
+                Provided to the exclusion of the boolean flags.
             forbid_main: If ``True``, raise :exc:`ValueError` when the module
                 is ``__main__``.
             forbid_locals: If ``True``, raise :exc:`ValueError` when the
