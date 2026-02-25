@@ -83,7 +83,7 @@ class VersionInfo:
                 are violated.
         """
         module = get_module(obj)
-        if forbid_main and module == "__main__":
+        if forbid_main and "__main__" in module:
             raise ValueError(f"Module for {obj} is __main__, which was forbidden.")
 
         qualname = get_qualname(obj)
