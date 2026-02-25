@@ -45,6 +45,9 @@ class VersionConstraints:
             )
         return constraints
 
+    def __bool__(self) -> bool:
+        return any([self.forbid_main, self.forbid_locals, self.require_version])
+
 
 @dataclasses.dataclass(frozen=True)
 class VersionInfo:
