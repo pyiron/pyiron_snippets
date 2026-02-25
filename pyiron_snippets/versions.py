@@ -94,20 +94,16 @@ class VersionInfo:
         forbid_main: bool = False,
         forbid_locals: bool = False,
         require_version: bool = False,
-    ) -> None:
+    ) -> VersionInfo:
         if forbid_main and "__main__" in self.module:
             raise ValueError(f"Found forbidden module '__main__' in module for {self}")
 
-        if (
-                forbid_locals
-                and self.qualname is not None
-                and "<locals>" in self.qualname
-        ):
+        if forbid_locals and self.qualname is not None and "<locals>" in self.qualname:
             raise ValueError(f"Found forbidden <locals> in qualname for {self}")
 
         if require_version and self.version is None:
             raise ValueError(f"Could not find a version for {self}")
-
+        return self
 
 
 def get_module(obj: Any) -> str:
