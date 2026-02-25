@@ -86,8 +86,8 @@ class VersionInfo:
     def of(
         cls,
         obj: object,
-        *,
         version_scraping: VersionScrapingMap | None = None,
+        *,
         constraints: VersionConstraints | None = None,
     ) -> VersionInfo: ...
 
@@ -96,8 +96,8 @@ class VersionInfo:
     def of(
         cls,
         obj: object,
-        *,
         version_scraping: VersionScrapingMap | None = None,
+        *,
         forbid_main: bool = False,
         forbid_locals: bool = False,
         require_version: bool = False,
@@ -107,8 +107,8 @@ class VersionInfo:
     def of(
         cls,
         obj: object,
-        *,
         version_scraping: VersionScrapingMap | None = None,
+        *,
         constraints: VersionConstraints | None = None,
         forbid_main: bool | None = None,
         forbid_locals: bool | None = None,
