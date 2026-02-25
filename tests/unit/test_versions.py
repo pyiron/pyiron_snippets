@@ -110,9 +110,7 @@ class TestVersionConstraintsDisambiguate(unittest.TestCase):
         self.assertIs(result, c)
 
     def test_builds_from_kwargs(self) -> None:
-        result = VersionConstraints.disambiguate(
-            forbid_main=True, require_version=True
-        )
+        result = VersionConstraints.disambiguate(forbid_main=True, require_version=True)
         self.assertTrue(result.forbid_main)
         self.assertFalse(result.forbid_locals)
         self.assertTrue(result.require_version)
