@@ -110,9 +110,9 @@ class VersionInfo:
         *,
         version_scraping: VersionScrapingMap | None = None,
         constraints: VersionConstraints | None = None,
-        forbid_main: bool = False,
-        forbid_locals: bool = False,
-        require_version: bool = False,
+        forbid_main: bool | None = None,
+        forbid_locals: bool | None = None,
+        require_version: bool | None = None,
     ) -> VersionInfo:
         """
         Construct a :class:`VersionInfo` by introspecting *obj*.
