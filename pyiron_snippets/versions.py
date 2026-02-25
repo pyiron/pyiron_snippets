@@ -11,6 +11,9 @@ from collections.abc import Callable
 from types import ModuleType
 from typing import Any, TypeAlias
 
+VersionScraperType: TypeAlias = Callable[[str], str | None]
+VersionScrapingMap: TypeAlias = dict[str, VersionScraperType]
+
 
 @dataclasses.dataclass(frozen=True)
 class VersionInfo:
@@ -113,10 +116,6 @@ def get_qualname(obj: Any) -> str | None:
     if isinstance(obj, ModuleType):
         return None
     return obj.__qualname__ if hasattr(obj, "__qualname__") else type(obj).__qualname__
-
-
-VersionScraperType: TypeAlias = Callable[[str], str | None]
-VersionScrapingMap: TypeAlias = dict[str, VersionScraperType]
 
 
 def get_version(
