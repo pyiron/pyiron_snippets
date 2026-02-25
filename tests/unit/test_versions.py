@@ -8,6 +8,7 @@ from types import ModuleType
 from unittest import mock
 
 from pyiron_snippets.versions import (
+    VersionConstraints,
     VersionInfo,
     VersionScrapingMap,
     get_module,
@@ -65,6 +66,71 @@ class _SyntheticPackage:
                 sys.modules.pop(name, None)
             else:
                 sys.modules[name] = prev
+
+
+# ---------------------------------------------------------------------------
+# VersionConstraints
+# ---------------------------------------------------------------------------
+
+
+class TestVersionConstraintsDefaults(unittest.TestCase):
+    def test_all_false_by_default(self) -> None:
+        c = VersionConstraints()
+        self.assertFalse(c.forbid_main)
+        self.assertFalse(c.forbid_locals)
+        self.assertFalse(c.require_version)
+
+    def test_frozen(self) -> None:
+        c = VersionConstraints()
+        with self.assertRaises(dataclasses.FrozenInstanceError):
+            c.forbid_main = True  # type: ignore[misc]
+
+
+class TestVersionConstraintsBool(unittest.TestCase):
+    def test_all_false_is_falsy(self) -> None:
+        self.assertFalse(VersionConstraints())
+
+    def test_any_true_is_truthy(self) -> None:
+        self.assertTrue(VersionConstraints(forbid_main=True))
+        self.assertTrue(VersionConstraints(forbid_locals=True))
+        self.assertTrue(VersionConstraints(require_version=True))
+
+    def test_all_true_is_truthy(self) -> None:
+        self.assertTrue(
+            VersionConstraints(
+                forbid_main=True, forbid_locals=True, require_version=True
+            )
+        )
+
+
+class TestVersionConstraintsDisambiguate(unittest.TestCase):
+    def test_returns_given_constraints_object(self) -> None:
+        c = VersionConstraints(forbid_main=True)
+        result = VersionConstraints.disambiguate(constraints=c)
+        self.assertIs(result, c)
+
+    def test_builds_from_kwargs(self) -> None:
+        result = VersionConstraints.disambiguate(
+            forbid_main=True, require_version=True
+        )
+        self.assertTrue(result.forbid_main)
+        self.assertFalse(result.forbid_locals)
+        self.assertTrue(result.require_version)
+
+    def test_none_kwargs_default_to_false(self) -> None:
+        result = VersionConstraints.disambiguate()
+        self.assertEqual(result, VersionConstraints())
+
+    def test_raises_when_both_constraints_and_kwargs(self) -> None:
+        c = VersionConstraints()
+        with self.assertRaises(TypeError, msg="Cannot pass both"):
+            VersionConstraints.disambiguate(constraints=c, forbid_main=True)
+
+    def test_raises_even_when_kwarg_is_false(self) -> None:
+        """Passing an explicit False kwarg alongside constraints is still an error."""
+        c = VersionConstraints()
+        with self.assertRaises(TypeError):
+            VersionConstraints.disambiguate(constraints=c, forbid_main=False)
 
 
 # ---------------------------------------------------------------------------
@@ -324,10 +390,6 @@ class TestVersionInfoOf(unittest.TestCase):
 
     def test_third_party_module(self) -> None:
         """A non-stdlib module with __version__ should report it."""
-        fake_mod = mock.MagicMock()
-        fake_mod.__name__ = "fake_pkg"
-        fake_mod.__version__ = "1.2.3"
-        # ModuleType check needs a real module; patch the relevant bits.
         import types
 
         mod = types.ModuleType("fake_pkg")
@@ -338,7 +400,7 @@ class TestVersionInfoOf(unittest.TestCase):
         self.assertIsNone(info.qualname)
         self.assertEqual(info.version, "1.2.3")
 
-    # -- forbid_main --------------------------------------------------------
+    # -- forbid_main (kwargs interface) -------------------------------------
 
     def test_forbid_main_raises(self) -> None:
         obj = mock.MagicMock(spec=type)
@@ -354,7 +416,7 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(obj, forbid_main=False)
         self.assertEqual(info.module, "__main__")
 
-    # -- forbid_locals ------------------------------------------------------
+    # -- forbid_locals (kwargs interface) -----------------------------------
 
     def test_forbid_locals_raises(self) -> None:
         def _make_local() -> type:
@@ -384,13 +446,11 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(os, forbid_locals=True)
         self.assertIsNone(info.qualname)
 
-    # -- require_version ----------------------------------------------------
+    # -- require_version (kwargs interface) ---------------------------------
 
     def test_require_version_raises_when_missing(self) -> None:
         fake_obj = mock.MagicMock(spec=type)
-        fake_obj.__module__ = "os"
         fake_obj.__qualname__ = "FakeObj"
-        # os is now stdlib so it *has* a version; use a non-stdlib fake instead.
         fake_mod = mock.MagicMock()
         del fake_mod.__version__
         fake_obj.__module__ = "no_version_pkg"
@@ -404,6 +464,31 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(42, require_version=True)
         self.assertIsNotNone(info.version)
 
+    # -- constraints object interface ---------------------------------------
+
+    def test_of_with_constraints_object(self) -> None:
+        obj = mock.MagicMock(spec=type)
+        obj.__module__ = "__main__"
+        obj.__qualname__ = "Foo"
+        constraints = VersionConstraints(forbid_main=True)
+        with self.assertRaises(ValueError, msg="__main__"):
+            VersionInfo.of(obj, constraints=constraints)
+
+    def test_of_with_empty_constraints_allows_all(self) -> None:
+        obj = mock.MagicMock(spec=type)
+        obj.__module__ = "__main__"
+        obj.__qualname__ = "Foo"
+        info = VersionInfo.of(obj, constraints=VersionConstraints())
+        self.assertEqual(info.module, "__main__")
+
+    def test_of_rejects_constraints_and_kwargs(self) -> None:
+        with self.assertRaises(TypeError):
+            VersionInfo.of(
+                42,
+                constraints=VersionConstraints(),
+                forbid_main=True,
+            )
+
     # -- version_scraping ---------------------------------------------------
 
     def test_version_scraping_passed_through(self) -> None:
@@ -413,6 +498,65 @@ class TestVersionInfoOf(unittest.TestCase):
         }
         info = VersionInfo.of(_Dummy, version_scraping=scraping)
         self.assertEqual(info.version, "0.0.1")
+
+
+# ---------------------------------------------------------------------------
+# VersionInfo.validate_constraints
+# ---------------------------------------------------------------------------
+
+
+class TestValidateConstraints(unittest.TestCase):
+    """Test validate_constraints on pre-built VersionInfo instances."""
+
+    def test_passing_constraints_object(self) -> None:
+        info = VersionInfo(module="__main__", qualname="Foo", version=None)
+        with self.assertRaises(ValueError):
+            info.validate_constraints(VersionConstraints(forbid_main=True))
+
+    def test_passing_kwargs(self) -> None:
+        info = VersionInfo(module="__main__", qualname="Foo", version=None)
+        with self.assertRaises(ValueError):
+            info.validate_constraints(forbid_main=True)
+
+    def test_no_constraints_is_noop(self) -> None:
+        info = VersionInfo(module="__main__", qualname="Foo.<locals>.Bar", version=None)
+        info.validate_constraints(VersionConstraints())  # should not raise
+
+    def test_forbid_locals_via_validate(self) -> None:
+        info = VersionInfo(module="m", qualname="Foo.<locals>.Bar", version=None)
+        with self.assertRaises(ValueError, msg="<locals>"):
+            info.validate_constraints(forbid_locals=True)
+
+    def test_forbid_locals_none_qualname_ok(self) -> None:
+        info = VersionInfo(module="os", qualname=None, version=PYTHON_VERSION)
+        info.validate_constraints(forbid_locals=True)  # should not raise
+
+    def test_require_version_via_validate(self) -> None:
+        info = VersionInfo(module="m", qualname="X", version=None)
+        with self.assertRaises(ValueError):
+            info.validate_constraints(require_version=True)
+
+    def test_require_version_ok_when_present(self) -> None:
+        info = VersionInfo(module="m", qualname="X", version="1.0.0")
+        info.validate_constraints(require_version=True)  # should not raise
+
+    def test_rejects_constraints_and_kwargs(self) -> None:
+        info = VersionInfo(module="m", qualname="X", version=None)
+        with self.assertRaises(TypeError):
+            info.validate_constraints(
+                VersionConstraints(), forbid_main=True  # type: ignore[call-overload]
+            )
+
+    def test_forbid_main_substring_match(self) -> None:
+        """The new behaviour uses ``in`` so 'foo.__main__' is also forbidden."""
+        info = VersionInfo(module="foo.__main__", qualname="Bar", version=None)
+        with self.assertRaises(ValueError):
+            info.validate_constraints(forbid_main=True)
+
+    def test_forbid_main_no_false_positive(self) -> None:
+        """A module containing 'main' but not '__main__' should pass."""
+        info = VersionInfo(module="mainlib.core", qualname="X", version="1.0")
+        info.validate_constraints(forbid_main=True)  # should not raise
 
 
 class TestFullyQualifiedName(unittest.TestCase):
