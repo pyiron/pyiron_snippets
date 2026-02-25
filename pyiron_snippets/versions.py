@@ -9,10 +9,17 @@ import importlib
 import sys
 from collections.abc import Callable
 from types import ModuleType
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, overload
 
 VersionScraperType: TypeAlias = Callable[[str], str | None]
 VersionScrapingMap: TypeAlias = dict[str, VersionScraperType]
+
+
+@dataclasses.dataclass(frozen=True)
+class VersionConstraints:
+    forbid_main: bool = False
+    forbid_locals: bool = False
+    require_version: bool = False
 
 
 @dataclasses.dataclass(frozen=True)
@@ -48,10 +55,34 @@ class VersionInfo:
         return f"{self.module}.{self.qualname}"
 
     @classmethod
+    @overload
     def of(
         cls,
         obj: object,
+        *,
         version_scraping: VersionScrapingMap | None = None,
+        constraints: VersionConstraints | None = None,
+    ) -> VersionInfo: ...
+
+    @classmethod
+    @overload
+    def of(
+        cls,
+        obj: object,
+        *,
+        version_scraping: VersionScrapingMap | None = None,
+        forbid_main: bool = False,
+        forbid_locals: bool = False,
+        require_version: bool = False,
+    ) -> VersionInfo: ...
+
+    @classmethod
+    def of(
+        cls,
+        obj: object,
+        *,
+        version_scraping: VersionScrapingMap | None = None,
+        constraints: VersionConstraints | None = None,
         forbid_main: bool = False,
         forbid_locals: bool = False,
         require_version: bool = False,
@@ -82,28 +113,74 @@ class VersionInfo:
             ValueError: If any of the ``forbid_*`` / ``require_*`` constraints
                 are violated.
         """
+        flags = (forbid_main, forbid_locals, require_version)
+        any_flag_set = any(f is not None for f in flags)
+        if constraints is not None:
+            if any_flag_set:
+                raise TypeError(
+                    "Cannot pass both constraints and individual constraint kwargs"
+                )
+        else:
+            constraints = VersionConstraints(
+                forbid_main=forbid_main or False,
+                forbid_locals=forbid_locals or False,
+                require_version=require_version or False,
+            )
+
         module = get_module(obj)
         qualname = get_qualname(obj)
         version = get_version(module, version_scraping=version_scraping)
         info = cls(module=module, qualname=qualname, version=version)
-        info.validate_constraints(forbid_main, forbid_locals, require_version)
+        info.validate_constraints(constraints)
         return info
 
+    @overload
+    def validate_constraints(self, constraints: VersionConstraints) -> None: ...
+
+    @overload
     def validate_constraints(
         self,
+        *,
         forbid_main: bool = False,
         forbid_locals: bool = False,
         require_version: bool = False,
-    ) -> VersionInfo:
-        if forbid_main and "__main__" in self.module:
+    ) -> None: ...
+
+    def validate_constraints(
+        self,
+        constraints: VersionConstraints | None = None,
+        *,
+        forbid_main: bool | None = None,
+        forbid_locals: bool | None = None,
+        require_version: bool | None = None,
+    ) -> None:
+        flags = (forbid_main, forbid_locals, require_version)
+        any_flag_set = any(f is not None for f in flags)
+
+        if constraints is not None:
+            if any_flag_set:
+                raise TypeError(
+                    "Cannot pass both constraints and individual constraint kwargs"
+                )
+        else:
+            constraints = VersionConstraints(
+                forbid_main=forbid_main or False,
+                forbid_locals=forbid_locals or False,
+                require_version=require_version or False,
+            )
+
+        if constraints.forbid_main and "__main__" in self.module:
             raise ValueError(f"Found forbidden module '__main__' in module for {self}")
 
-        if forbid_locals and self.qualname is not None and "<locals>" in self.qualname:
+        if (
+            constraints.forbid_locals
+            and self.qualname is not None
+            and "<locals>" in self.qualname
+        ):
             raise ValueError(f"Found forbidden <locals> in qualname for {self}")
 
-        if require_version and self.version is None:
+        if constraints.require_version and self.version is None:
             raise ValueError(f"Could not find a version for {self}")
-        return self
 
 
 def get_module(obj: Any) -> str:
