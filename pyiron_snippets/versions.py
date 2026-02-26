@@ -32,6 +32,10 @@ class VersionInfo:
         >>>
         >>> versions.VersionInfo.of(42)  # doctest: +ELLIPSIS
         VersionInfo(module='builtins', qualname='int', version=...)
+
+    Note:
+        For object instances, this is version info about that object's _type_, not
+        information about where the instance itself is living.
     """
 
     module: str
@@ -99,6 +103,13 @@ class VersionInfo:
 
 
 def get_module(obj: Any) -> str:
+    """
+    Get module information for an arbitrary object.
+
+    Note:
+        For object instances, this is version info about that object's _type_, not
+        information about where the instance itself is living.
+    """
     if isinstance(obj, ModuleType):
         return obj.__name__
 
@@ -133,6 +144,13 @@ def get_module(obj: Any) -> str:
 
 
 def get_qualname(obj: Any) -> str | None:
+    """
+    Get module information for an arbitrary object.
+
+    Note:
+        For object instances, this is version info about that object's _type_, not
+        information about where the instance itself is living.
+    """
     if isinstance(obj, ModuleType):
         return None
     return obj.__qualname__ if hasattr(obj, "__qualname__") else type(obj).__qualname__
