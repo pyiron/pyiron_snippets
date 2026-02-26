@@ -105,6 +105,10 @@ class TestGetModule(unittest.TestCase):
 
         self.assertEqual(get_module(os.path), os.path.__name__)
 
+    def test_none_module(self):
+        d = {}
+        self.assertEqual(get_module(d.get), "builtins")
+
 
 class TestGetQualname(unittest.TestCase):
     def test_class(self) -> None:

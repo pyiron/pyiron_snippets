@@ -98,21 +98,27 @@ class VersionInfo:
         return cls(module=module, qualname=qualname, version=version)
 
 
+def _attempt_return_attribute(obj: Any, attrib: str) -> str | None:
+    if hasattr(obj, attrib) and isinstance(getattr(obj, attrib), str):
+        return getattr(obj, attrib)
+    try:
+        return getattr(type(obj), attrib)
+    except AttributeError as e:
+        raise AttributeError(
+            f"Could not find attribute {attrib} on obj {obj} or type(obj) {type(obj)}."
+        ) from e
+
+
 def get_module(obj: Any) -> str:
     if isinstance(obj, ModuleType):
         return obj.__name__
-    try:
-        return obj.__module__ if hasattr(obj, "__module__") else type(obj).__module__
-    except AttributeError as e:
-        raise AttributeError(
-            f"Could not find a module on obj {obj} or type(obj) {type(obj)}."
-        ) from e
+    return _attempt_return_attribute(obj, "__module__")
 
 
 def get_qualname(obj: Any) -> str | None:
     if isinstance(obj, ModuleType):
         return None
-    return obj.__qualname__ if hasattr(obj, "__qualname__") else type(obj).__qualname__
+    return _attempt_return_attribute(obj, "__qualname__")
 
 
 VersionScraperType: TypeAlias = Callable[[str], str | None]
