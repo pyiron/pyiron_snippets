@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import collections
 import dataclasses
+import io
 import os
+import re
 import sys
 import unittest
-from types import ModuleType
+from types import BuiltinMethodType, ModuleType
 from unittest import mock
 
 from pyiron_snippets.versions import (
@@ -104,6 +107,21 @@ class TestGetModule(unittest.TestCase):
         import os.path
 
         self.assertEqual(get_module(os.path), os.path.__name__)
+
+    def test_instance_methods(self) -> None:
+        """C-bindings to instances can leave the module as None, so we need caution"""
+        for instance, method_name in [
+            ({"a": 1}, "get"),
+            (collections.OrderedDict(), "move_to_end"),
+            (io.BytesIO(b"hello"), "read"),
+            (re.match(r".", "x"), "group"),
+        ]:
+            with self.subTest(instance=instance, method_name=method_name):
+                method = getattr(instance, method_name)
+                self.assertIsInstance(method, BuiltinMethodType)
+                expected_module = type(instance).__module__
+                self.assertEqual(get_module(method), expected_module)
+
 
 
 class TestGetQualname(unittest.TestCase):
