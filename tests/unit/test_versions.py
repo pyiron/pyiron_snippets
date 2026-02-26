@@ -70,6 +70,19 @@ class _SyntheticPackage:
                 sys.modules[name] = prev
 
 
+class PathologicalMeta(type):
+    """Go way out of our way to build something that fails to get a module."""
+    @property
+    def __module__(cls):
+        raise AttributeError("no module here")
+
+
+class Pathological(metaclass=PathologicalMeta):
+    @property
+    def __module__(self):
+        raise AttributeError("no module here")
+
+
 # ---------------------------------------------------------------------------
 # get_module / get_qualname
 # ---------------------------------------------------------------------------
@@ -121,6 +134,11 @@ class TestGetModule(unittest.TestCase):
                 self.assertIsInstance(method, BuiltinMethodType)
                 expected_module = type(instance).__module__
                 self.assertEqual(get_module(method), expected_module)
+
+    def test_pathologically_unmoduled_object_raises(self):
+        with self.assertRaises(AttributeError) as ctx:
+            get_module(Pathological())
+        self.assertIn("Could not find a module", str(ctx.exception))
 
 
 

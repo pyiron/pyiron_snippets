@@ -8,7 +8,7 @@ import dataclasses
 import importlib
 import sys
 from collections.abc import Callable
-from types import ModuleType
+from types import BuiltinMethodType, ModuleType
 from typing import Any, TypeAlias
 
 
@@ -101,12 +101,35 @@ class VersionInfo:
 def get_module(obj: Any) -> str:
     if isinstance(obj, ModuleType):
         return obj.__name__
-    try:
-        return obj.__module__ if hasattr(obj, "__module__") else type(obj).__module__
-    except AttributeError as e:
-        raise AttributeError(
-            f"Could not find a module on obj {obj} or type(obj) {type(obj)}."
-        ) from e
+
+    # Try the obvious path first
+    module = getattr(obj, "__module__", None)
+    if module is not None:
+        return module
+
+    # For bound builtin methods, look up the defining class
+    if isinstance(obj, BuiltinMethodType):
+        # obj.__self__ is the instance, obj.__name__ is the method name
+        self_obj = getattr(obj, "__self__", None)
+        if self_obj is not None:
+            for cls in type(self_obj).__mro__:
+                if obj.__name__ in cls.__dict__:
+                    module = getattr(cls.__dict__[obj.__name__], "__module__", None)
+                    if module is not None:
+                        return module
+            # Fall back to the type's module
+            module = getattr(type(self_obj), "__module__", None)
+            if module is not None:
+                return module
+
+    # Last resort
+    module = getattr(type(obj), "__module__", None)
+    if module is not None:
+        return module
+
+    raise AttributeError(
+        f"Could not find a module on obj {obj} or type(obj) {type(obj)}."
+    )
 
 
 def get_qualname(obj: Any) -> str | None:
