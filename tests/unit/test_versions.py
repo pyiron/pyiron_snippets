@@ -169,8 +169,7 @@ class TestGetQualname(unittest.TestCase):
         self.assertIsNone(get_qualname(os))
 
     def test_pathologically_bad_qualname_raises(self):
-        class NonStringQualname:
-            ...
+        class NonStringQualname: ...
 
         # Force a non-string qualname attribute on the instance
         obj = NonStringQualname()
@@ -184,6 +183,7 @@ class TestGetQualname(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             get_qualname(Anonymous)
         self.assertIn("Expected a non-empty", str(ctx.exception))
+
 
 # ---------------------------------------------------------------------------
 # get_version
