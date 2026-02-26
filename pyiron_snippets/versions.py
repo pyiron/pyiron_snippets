@@ -98,7 +98,7 @@ class VersionInfo:
         return cls(module=module, qualname=qualname, version=version)
 
 
-def _attempt_return_attribute(obj: Any, attrib: str) -> str | None:
+def _attempt_return_attribute(obj: Any, attrib: str) -> str:
     if hasattr(obj, attrib) and isinstance(getattr(obj, attrib), str):
         return getattr(obj, attrib)
     try:
