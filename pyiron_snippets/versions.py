@@ -200,6 +200,10 @@ def get_qualname(obj: Any) -> str | None:
         "__qualname__",
         getattr(type(obj), "__qualname__", None)
     )
+    if not isinstance(qualname, str):
+        raise TypeError(f"Expected a string __qualname__, but {obj} had {qualname}.")
+    if len(qualname) == 0:
+        raise ValueError(f"Expected a non-empty qualname string for {obj}.")
     return qualname
 
 
