@@ -72,6 +72,7 @@ class _SyntheticPackage:
 
 class PathologicalMeta(type):
     """Go way out of our way to build something that fails to get a module."""
+
     @property
     def __module__(cls):
         raise AttributeError("no module here")
@@ -139,7 +140,6 @@ class TestGetModule(unittest.TestCase):
         with self.assertRaises(AttributeError) as ctx:
             get_module(Pathological())
         self.assertIn("Could not find a module", str(ctx.exception))
-
 
 
 class TestGetQualname(unittest.TestCase):
