@@ -111,6 +111,41 @@ class VersionInfo:
         return self
 
 
+class GetInfo:
+    """
+    A simple wrapper class for :class:`VersionInfo` that is useful when getting
+    info from multiple objects with the same settings.
+    """
+
+    def __init__(
+        self,
+        version_scraping: VersionScrapingMap | None = None,
+        forbid_main: bool = False,
+        forbid_locals: bool = False,
+        require_version: bool = False,
+    ):
+        self._version_scraping = version_scraping
+        self._forbid_main = forbid_main
+        self._forbid_locals = forbid_locals
+        self._require_version = require_version
+
+    def of(self, obj: object) -> VersionInfo:
+        return VersionInfo.of(
+            obj,
+            version_scraping=self._version_scraping,
+            forbid_main=self._forbid_main,
+            forbid_locals=self._forbid_locals,
+            require_version=self._require_version,
+        )
+
+    def validate_constraints(self, info: VersionInfo) -> VersionInfo:
+        return info.validate_constraints(
+            forbid_main=self._forbid_main,
+            forbid_locals=self._forbid_locals,
+            require_version=self._require_version,
+        )
+
+
 def get_module(obj: Any) -> str:
     if isinstance(obj, ModuleType):
         return obj.__name__
