@@ -124,25 +124,25 @@ class GetInfo:
         forbid_locals: bool = False,
         require_version: bool = False,
     ):
-        self._version_scraping = version_scraping
-        self._forbid_main = forbid_main
-        self._forbid_locals = forbid_locals
-        self._require_version = require_version
+        self.version_scraping = version_scraping
+        self.forbid_main = forbid_main
+        self.forbid_locals = forbid_locals
+        self.require_version = require_version
 
     def of(self, obj: object) -> VersionInfo:
         return VersionInfo.of(
             obj,
-            version_scraping=self._version_scraping,
-            forbid_main=self._forbid_main,
-            forbid_locals=self._forbid_locals,
-            require_version=self._require_version,
+            version_scraping=self.version_scraping,
+            forbid_main=self.forbid_main,
+            forbid_locals=self.forbid_locals,
+            require_version=self.require_version,
         )
 
     def validate_constraints(self, info: VersionInfo) -> VersionInfo:
         return info.validate_constraints(
-            forbid_main=self._forbid_main,
-            forbid_locals=self._forbid_locals,
-            require_version=self._require_version,
+            forbid_main=self.forbid_main,
+            forbid_locals=self.forbid_locals,
+            require_version=self.require_version,
         )
 
 
