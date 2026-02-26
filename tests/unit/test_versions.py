@@ -105,7 +105,7 @@ class TestGetModule(unittest.TestCase):
 
         self.assertEqual(get_module(os.path), os.path.__name__)
 
-    def test_none_module(self):
+    def test_none_module(self) -> None:
         d = {}
         self.assertEqual(get_module(d.get), "builtins")
 
