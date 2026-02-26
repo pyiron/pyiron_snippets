@@ -111,23 +111,17 @@ class VersionInfo:
         return self
 
 
-class GetInfo:
+@dataclasses.dataclass(frozen=True)
+class VersionInfoFactory:
     """
-    A simple wrapper class for :class:`VersionInfo` that is useful when getting
+    A simple stateful wrapper for :class:`VersionInfo` that is useful when getting
     info from multiple objects with the same settings.
     """
 
-    def __init__(
-        self,
-        version_scraping: VersionScrapingMap | None = None,
-        forbid_main: bool = False,
-        forbid_locals: bool = False,
-        require_version: bool = False,
-    ):
-        self.version_scraping = version_scraping
-        self.forbid_main = forbid_main
-        self.forbid_locals = forbid_locals
-        self.require_version = require_version
+    version_scraping: VersionScrapingMap | None = None
+    forbid_main: bool = False
+    forbid_locals: bool = False
+    require_version: bool = False
 
     def of(self, obj: object) -> VersionInfo:
         return VersionInfo.of(
