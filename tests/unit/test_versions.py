@@ -9,6 +9,7 @@ from unittest import mock
 
 from pyiron_snippets.versions import (
     VersionInfo,
+    VersionInfoFactory,
     VersionScrapingMap,
     get_module,
     get_qualname,
@@ -324,10 +325,6 @@ class TestVersionInfoOf(unittest.TestCase):
 
     def test_third_party_module(self) -> None:
         """A non-stdlib module with __version__ should report it."""
-        fake_mod = mock.MagicMock()
-        fake_mod.__name__ = "fake_pkg"
-        fake_mod.__version__ = "1.2.3"
-        # ModuleType check needs a real module; patch the relevant bits.
         import types
 
         mod = types.ModuleType("fake_pkg")
@@ -388,9 +385,7 @@ class TestVersionInfoOf(unittest.TestCase):
 
     def test_require_version_raises_when_missing(self) -> None:
         fake_obj = mock.MagicMock(spec=type)
-        fake_obj.__module__ = "os"
         fake_obj.__qualname__ = "FakeObj"
-        # os is now stdlib so it *has* a version; use a non-stdlib fake instead.
         fake_mod = mock.MagicMock()
         del fake_mod.__version__
         fake_obj.__module__ = "no_version_pkg"
@@ -413,6 +408,155 @@ class TestVersionInfoOf(unittest.TestCase):
         }
         info = VersionInfo.of(_Dummy, version_scraping=scraping)
         self.assertEqual(info.version, "0.0.1")
+
+
+# ---------------------------------------------------------------------------
+# VersionInfo.validate_constraints (standalone)
+# ---------------------------------------------------------------------------
+
+
+class TestValidateConstraints(unittest.TestCase):
+    """Test validate_constraints as a standalone method on VersionInfo."""
+
+    def test_returns_self(self) -> None:
+        info = VersionInfo(module="foo", qualname="Bar", version="1.0.0")
+        result = info.validate_constraints()
+        self.assertIs(result, info)
+
+    def test_no_constraints_always_passes(self) -> None:
+        info = VersionInfo(module="__main__", qualname="A.<locals>.B", version=None)
+        self.assertIs(info.validate_constraints(), info)
+
+    def test_forbid_main_raises(self) -> None:
+        info = VersionInfo(module="__main__", qualname="Foo", version=None)
+        with self.assertRaises(ValueError, msg="__main__"):
+            info.validate_constraints(forbid_main=True)
+
+    def test_forbid_main_passes_normal_module(self) -> None:
+        info = VersionInfo(module="some.pkg", qualname="Foo", version=None)
+        self.assertIs(info.validate_constraints(forbid_main=True), info)
+
+    def test_forbid_locals_raises(self) -> None:
+        info = VersionInfo(module="m", qualname="f.<locals>.Cls", version=None)
+        with self.assertRaises(ValueError, msg="<locals>"):
+            info.validate_constraints(forbid_locals=True)
+
+    def test_forbid_locals_passes_normal_qualname(self) -> None:
+        info = VersionInfo(module="m", qualname="Outer.Inner", version="1.0")
+        self.assertIs(info.validate_constraints(forbid_locals=True), info)
+
+    def test_forbid_locals_passes_none_qualname(self) -> None:
+        info = VersionInfo(module="os", qualname=None, version=PYTHON_VERSION)
+        self.assertIs(info.validate_constraints(forbid_locals=True), info)
+
+    def test_require_version_raises_when_none(self) -> None:
+        info = VersionInfo(module="m", qualname="X", version=None)
+        with self.assertRaises(ValueError):
+            info.validate_constraints(require_version=True)
+
+    def test_require_version_passes_when_present(self) -> None:
+        info = VersionInfo(module="m", qualname="X", version="1.0.0")
+        self.assertIs(info.validate_constraints(require_version=True), info)
+
+    def test_multiple_constraints_all_pass(self) -> None:
+        info = VersionInfo(module="pkg", qualname="Cls", version="2.0.0")
+        result = info.validate_constraints(
+            forbid_main=True, forbid_locals=True, require_version=True
+        )
+        self.assertIs(result, info)
+
+    def test_multiple_constraints_first_failure_wins(self) -> None:
+        """An info that violates multiple constraints raises on the first check."""
+        info = VersionInfo(module="__main__", qualname="f.<locals>.C", version=None)
+        with self.assertRaises(ValueError, msg="__main__"):
+            info.validate_constraints(
+                forbid_main=True, forbid_locals=True, require_version=True
+            )
+
+
+# ---------------------------------------------------------------------------
+# VersionInfoFactory
+# ---------------------------------------------------------------------------
+
+
+class TestVersionInfoFactory(unittest.TestCase):
+    def test_defaults(self) -> None:
+        vif = VersionInfoFactory()
+        self.assertIsNone(vif.version_scraping)
+        self.assertFalse(vif.forbid_main)
+        self.assertFalse(vif.forbid_locals)
+        self.assertFalse(vif.require_version)
+
+    def test_of_basic(self) -> None:
+        vif = VersionInfoFactory()
+        info = vif.of(42)
+        self.assertEqual(info.module, "builtins")
+        self.assertEqual(info.qualname, "int")
+        self.assertIsNotNone(info.version)
+
+    def test_of_with_version_scraping(self) -> None:
+        module_base = _Dummy.__module__.split(".")[0]
+        vif = VersionInfoFactory(version_scraping={module_base: lambda _: "7.7.7"})
+        info = vif.of(_Dummy)
+        self.assertEqual(info.version, "7.7.7")
+
+    def test_of_forbid_main_raises(self) -> None:
+        vif = VersionInfoFactory(forbid_main=True)
+        obj = mock.MagicMock(spec=type)
+        obj.__module__ = "__main__"
+        obj.__qualname__ = "Foo"
+        with self.assertRaises(ValueError, msg="__main__"):
+            vif.of(obj)
+
+    def test_of_forbid_locals_raises(self) -> None:
+        vif = VersionInfoFactory(forbid_locals=True)
+
+        def _make_local() -> type:
+            class _Local:
+                pass
+
+            return _Local
+
+        with self.assertRaises(ValueError, msg="<locals>"):
+            vif.of(_make_local())
+
+    def test_of_require_version_raises(self) -> None:
+        vif = VersionInfoFactory(require_version=True)
+        fake_mod = mock.MagicMock()
+        del fake_mod.__version__
+        obj = mock.MagicMock(spec=type)
+        obj.__module__ = "no_ver_pkg"
+        obj.__qualname__ = "X"
+        with (
+            mock.patch.dict("sys.modules", {"no_ver_pkg": fake_mod}),
+            self.assertRaises(ValueError),
+        ):
+            vif.of(obj)
+
+    def test_of_multiple_objects_same_settings(self) -> None:
+        """The main use case: reuse one VersionInfoFactory for many objects."""
+        vif = VersionInfoFactory(require_version=True)
+        info_int = vif.of(42)
+        info_str = vif.of("hello")
+        self.assertEqual(info_int.module, "builtins")
+        self.assertEqual(info_str.module, "builtins")
+
+    def test_validate_constraints_delegates(self) -> None:
+        vif = VersionInfoFactory(forbid_main=True)
+        info = VersionInfo(module="__main__", qualname="Foo", version=None)
+        with self.assertRaises(ValueError, msg="__main__"):
+            vif.validate_constraints(info)
+
+    def test_validate_constraints_returns_info(self) -> None:
+        vif = VersionInfoFactory()
+        info = VersionInfo(module="pkg", qualname="Cls", version="1.0")
+        result = vif.validate_constraints(info)
+        self.assertIs(result, info)
+
+    def test_is_frozen(self) -> None:
+        vif = VersionInfoFactory()
+        with self.assertRaises(dataclasses.FrozenInstanceError):
+            vif.forbid_main = True  # type: ignore[misc]
 
 
 class TestFullyQualifiedName(unittest.TestCase):
