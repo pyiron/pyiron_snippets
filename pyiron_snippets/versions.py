@@ -9,7 +9,7 @@ import importlib
 import sys
 from collections.abc import Callable
 from types import ModuleType
-from typing import Any, TypeAlias
+from typing import Any, Self, TypeAlias
 
 VersionScraperType: TypeAlias = Callable[[str], str | None]
 VersionScrapingMap: TypeAlias = dict[str, VersionScraperType]
@@ -83,22 +83,32 @@ class VersionInfo:
                 are violated.
         """
         module = get_module(obj)
-        if forbid_main and module == "__main__":
-            raise ValueError(f"Module for {obj} is __main__, which was forbidden.")
-
         qualname = get_qualname(obj)
-        if forbid_locals and qualname is not None and "<locals>" in qualname:
-            raise ValueError(
-                f"Qualname for {obj} contains <locals>, which was forbidden."
-            )
-
         version = get_version(module, version_scraping=version_scraping)
-        if require_version and version is None:
-            raise ValueError(
-                f"Version for {obj} (module {module}) could not be found, but was required."
-            )
+        info = cls(module=module, qualname=qualname, version=version)
+        info.validate_constraints(
+            forbid_main=forbid_main,
+            forbid_locals=forbid_locals,
+            require_version=require_version,
+        )
+        return info
 
-        return cls(module=module, qualname=qualname, version=version)
+    def validate_constraints(
+        self,
+        forbid_main: bool = False,
+        forbid_locals: bool = False,
+        require_version: bool = False,
+    ) -> Self:
+        if forbid_main and "__main__" in self.module:
+            raise ValueError(f"Found forbidden module '__main__' in module for {self}")
+
+        if forbid_locals and self.qualname is not None and "<locals>" in self.qualname:
+            raise ValueError(f"Found forbidden <locals> in qualname for {self}")
+
+        if require_version and self.version is None:
+            raise ValueError(f"Could not find a version for {self}")
+
+        return self
 
 
 def get_module(obj: Any) -> str:
