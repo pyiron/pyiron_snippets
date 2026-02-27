@@ -168,6 +168,22 @@ class TestGetQualname(unittest.TestCase):
     def test_module_returns_none(self) -> None:
         self.assertIsNone(get_qualname(os))
 
+    def test_pathologically_bad_qualname_raises(self):
+        class NonStringQualname: ...
+
+        # Force a non-string qualname attribute on the instance
+        obj = NonStringQualname()
+        obj.__qualname__ = 42
+        with self.assertRaises(TypeError) as ctx:
+            get_qualname(obj)
+        self.assertIn("Expected a string", str(ctx.exception))
+
+    def test_empty_qualname_raises(self):
+        Anonymous = type("", (), {})
+        with self.assertRaises(ValueError) as ctx:
+            get_qualname(Anonymous)
+        self.assertIn("Expected a non-empty", str(ctx.exception))
+
 
 # ---------------------------------------------------------------------------
 # get_version

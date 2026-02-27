@@ -195,7 +195,12 @@ def get_qualname(obj: Any) -> str | None:
     """
     if isinstance(obj, ModuleType):
         return None
-    return obj.__qualname__ if hasattr(obj, "__qualname__") else type(obj).__qualname__
+    qualname = getattr(obj, "__qualname__", getattr(type(obj), "__qualname__", None))
+    if not isinstance(qualname, str):
+        raise TypeError(f"Expected a string __qualname__, but {obj} had {qualname}.")
+    if len(qualname) == 0:
+        raise ValueError(f"Expected a non-empty qualname string for {obj}.")
+    return qualname
 
 
 def get_version(
