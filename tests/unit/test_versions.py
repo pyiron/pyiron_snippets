@@ -193,7 +193,7 @@ class TestGetQualname(unittest.TestCase):
         Anonymous = type("", (), {})
         with self.assertRaises(ValueError) as ctx:
             get_qualname(Anonymous)
-        self.assertIn("Expected a non-empty", str(ctx.exception))
+        self.assertIn("Expected a _non-empty_", str(ctx.exception))
 
     def test_name_used_when_qualname_absent(self) -> None:
         """Simulates the ufunc pattern: __name__ present, __qualname__ absent."""

@@ -216,10 +216,17 @@ def get_qualname(obj: Any) -> str | None:
             )
         )
     )
+    qualname_source = "(`obj.__qualname__` > `obj.__name__` > type(obj).__qualname__`)"
     if not isinstance(qualname, str):
-        raise TypeError(f"Expected a string __qualname__, but {obj} had {qualname}.")
+        raise TypeError(
+            f"Expected a string qualname source {qualname_source}, but {obj} had "
+            f"'{qualname}'."
+        )
     if len(qualname) == 0:
-        raise ValueError(f"Expected a non-empty qualname string for {obj}.")
+        raise ValueError(
+            f"Expected a _non-empty_ string as the qualname source {qualname_source} "
+            f"for {obj}."
+        )
     return qualname
 
 
