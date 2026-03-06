@@ -212,9 +212,9 @@ def get_qualname(obj: Any) -> str | None:
                 # Fall back to the type's qualname (for regular instances like `42`)
                 type(obj),
                 "__qualname__",
-                None
-            )
-        )
+                None,
+            ),
+        ),
     )
     qualname_source = "(`obj.__qualname__` > `obj.__name__` > type(obj).__qualname__`)"
     if not isinstance(qualname, str):
