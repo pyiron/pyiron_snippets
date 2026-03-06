@@ -85,6 +85,17 @@ class Pathological(metaclass=PathologicalMeta):
         raise AttributeError("no module here")
 
 
+class _CCallableType:
+    """Mimics C-level callable instances (e.g. numpy ufuncs).
+
+    Instances carry ``__name__`` but not ``__qualname__``, and the
+    type's ``__qualname__`` is a generic bucket name.
+    """
+
+    def __init__(self, name: str) -> None:
+        self.__name__ = name
+
+
 # ---------------------------------------------------------------------------
 # get_module / get_qualname
 # ---------------------------------------------------------------------------
@@ -183,6 +194,16 @@ class TestGetQualname(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             get_qualname(Anonymous)
         self.assertIn("Expected a non-empty", str(ctx.exception))
+
+    def test_name_used_when_qualname_absent(self) -> None:
+        """Simulates the ufunc pattern: __name__ present, __qualname__ absent."""
+        obj = _CCallableType("log")
+        self.assertEqual(get_qualname(obj), "log")
+
+    def test_qualname_preferred_over_name(self) -> None:
+        obj = _CCallableType("log")
+        obj.__qualname__ = "special.log"  # type: ignore[attr-defined]
+        self.assertEqual(get_qualname(obj), "special.log")
 
 
 # ---------------------------------------------------------------------------

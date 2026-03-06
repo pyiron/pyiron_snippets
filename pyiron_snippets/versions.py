@@ -195,7 +195,27 @@ def get_qualname(obj: Any) -> str | None:
     """
     if isinstance(obj, ModuleType):
         return None
-    qualname = getattr(obj, "__qualname__", getattr(type(obj), "__qualname__", None))
+
+    qualname = getattr(
+        # Prefer __qualname__ on the object (works for functions, classes, methods)
+        obj,
+        "__qualname__",
+        getattr(
+            # For C-level callable instances (ufuncs, etc.), __name__ is typically set
+            # even when __qualname__ is not
+            # Typically safe insofar as regular instances don't have either __name__ or
+            # __qualname__, so we can return early instead of proceeding to type checks
+            # if it is there
+            obj,
+            "__name__",
+            getattr(
+                # Fall back to the type's qualname (for regular instances like `42`)
+                type(obj),
+                "__qualname__",
+                None
+            )
+        )
+    )
     if not isinstance(qualname, str):
         raise TypeError(f"Expected a string __qualname__, but {obj} had {qualname}.")
     if len(qualname) == 0:
