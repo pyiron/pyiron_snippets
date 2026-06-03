@@ -401,6 +401,7 @@ class TestVersionInfoOf(unittest.TestCase):
     def test_module(self) -> None:
         info = VersionInfo.of(os)
         self.assertEqual(info.module, "os")
+        self.assertEqual(info.usable_name, info.module)
         self.assertIsNone(info.qualname)
         self.assertEqual(info.version, PYTHON_VERSION)
 
