@@ -60,6 +60,18 @@ class VersionInfo:
         else:
             return self.fully_qualified_name
 
+    @property
+    def is_local(self) -> bool:
+        return self.qualname is not None and "<locals>" in self.qualname
+
+    @property
+    def in_main(self) -> bool:
+        return "__main__" in self.module
+
+    @property
+    def has_version(self) -> bool:
+        return self.version is not None
+
     @classmethod
     def of(
         cls,
@@ -112,13 +124,13 @@ class VersionInfo:
         forbid_locals: bool = False,
         require_version: bool = False,
     ) -> Self:
-        if forbid_main and "__main__" in self.module:
+        if forbid_main and self.in_main:
             raise ValueError(f"Found forbidden module '__main__' in module for {self}")
 
-        if forbid_locals and self.qualname is not None and "<locals>" in self.qualname:
+        if forbid_locals and self.is_local:
             raise ValueError(f"Found forbidden <locals> in qualname for {self}")
 
-        if require_version and self.version is None:
+        if require_version and not self.has_version:
             raise ValueError(f"Could not find a version for {self}")
 
         return self
