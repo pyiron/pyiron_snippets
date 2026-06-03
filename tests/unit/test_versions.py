@@ -376,6 +376,11 @@ class TestVersionInfoOf(unittest.TestCase):
     def test_function(self) -> None:
         info = VersionInfo.of(_dummy_function)
         self.assertEqual(info.qualname, "_dummy_function")
+        
+    def test_lambda_function(self) -> None:
+        _lambda = lambda: 5
+        info = VersionInfo.of(_lambda)
+        self.assertIn("<lambda>", info.qualname)
 
     def test_builtin_instance(self) -> None:
         info = VersionInfo.of(42)
@@ -457,6 +462,26 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(os, forbid_locals=True)
         self.assertIsNone(info.qualname)
 
+    # -- forbid_lambda ------------------------------------------------------
+
+    def test_forbid_lambda_raises(self) -> None:
+        _lambda = lambda: 5
+
+        self.assertIn("<lambda>", _lambda.__qualname__)
+        with self.assertRaises(ValueError, msg="<lambda>"):
+            VersionInfo.of(_lambda, forbid_lambda=True)
+
+    def test_forbid_lambda_false_allows_lambda(self) -> None:
+        _lambda = lambda: 5
+
+        info = VersionInfo.of(_lambda, forbid_lambda=False)
+        self.assertIn("<lambda>", info.qualname)
+
+    def test_forbid_lambda_ok_for_module(self) -> None:
+        """forbid_lambda should not crash when qualname is None (modules)."""
+        info = VersionInfo.of(os, forbid_lambda=True)
+        self.assertIsNone(info.qualname)
+
     # -- require_version ----------------------------------------------------
 
     def test_require_version_raises_when_missing(self) -> None:
@@ -524,6 +549,19 @@ class TestValidateConstraints(unittest.TestCase):
     def test_forbid_locals_passes_none_qualname(self) -> None:
         info = VersionInfo(module="os", qualname=None, version=PYTHON_VERSION)
         self.assertIs(info.validate_constraints(forbid_locals=True), info)
+        
+    def test_forbid_lambda_raises(self) -> None:
+        info = VersionInfo(module="m", qualname="mod.<lambda>", version=None)
+        with self.assertRaises(ValueError, msg="<lambda>"):
+            info.validate_constraints(forbid_lambda=True)
+
+    def test_forbid_lambda_passes_normal_qualname(self) -> None:
+        info = VersionInfo(module="m", qualname="Outer.Inner", version="1.0")
+        self.assertIs(info.validate_constraints(forbid_lambda=True), info)
+
+    def test_forbid_lambda_passes_none_qualname(self) -> None:
+        info = VersionInfo(module="os", qualname=None, version=PYTHON_VERSION)
+        self.assertIs(info.validate_constraints(forbid_lambda=True), info)
 
     def test_require_version_raises_when_none(self) -> None:
         info = VersionInfo(module="m", qualname="X", version=None)

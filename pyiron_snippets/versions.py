@@ -65,6 +65,10 @@ class VersionInfo:
         return self.qualname is not None and "<locals>" in self.qualname
 
     @property
+    def is_lambda(self) -> bool:
+        return self.qualname is not None and "<lambda>" in self.qualname
+
+    @property
     def in_main(self) -> bool:
         return "__main__" in self.module
 
@@ -79,6 +83,7 @@ class VersionInfo:
         version_scraping: VersionScrapingMap | None = None,
         forbid_main: bool = False,
         forbid_locals: bool = False,
+        forbid_lambda: bool = False,
         require_version: bool = False,
     ) -> VersionInfo:
         """
@@ -97,6 +102,8 @@ class VersionInfo:
             forbid_locals: If ``True``, raise :exc:`ValueError` when the
                 qualname contains ``<locals>`` (i.e. the type was defined
                 inside a function).
+            forbid_lambda: If ``True``, raise :exc:`ValueError` when the qualname
+                contains ``<lambda>``.
             require_version: If ``True``, raise :exc:`ValueError` when no
                 version can be determined for the module.
 
@@ -114,6 +121,7 @@ class VersionInfo:
         info.validate_constraints(
             forbid_main=forbid_main,
             forbid_locals=forbid_locals,
+            forbid_lambda=forbid_lambda,
             require_version=require_version,
         )
         return info
@@ -122,6 +130,7 @@ class VersionInfo:
         self,
         forbid_main: bool = False,
         forbid_locals: bool = False,
+        forbid_lambda: bool = False,
         require_version: bool = False,
     ) -> Self:
         if forbid_main and self.in_main:
@@ -129,6 +138,9 @@ class VersionInfo:
 
         if forbid_locals and self.is_local:
             raise ValueError(f"Found forbidden <locals> in qualname for {self}")
+
+        if forbid_lambda and self.is_lambda:
+            raise ValueError(f"Found forbidden <lambda> in qualname for {self}")
 
         if require_version and not self.has_version:
             raise ValueError(f"Could not find a version for {self}")
