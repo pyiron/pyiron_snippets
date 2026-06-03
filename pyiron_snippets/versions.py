@@ -85,6 +85,7 @@ class VersionInfo:
         forbid_locals: bool = False,
         forbid_lambda: bool = False,
         require_version: bool = False,
+        strict: bool = False,
     ) -> VersionInfo:
         """
         Construct a :class:`VersionInfo` by introspecting *obj*.
@@ -106,6 +107,7 @@ class VersionInfo:
                 contains ``<lambda>``.
             require_version: If ``True``, raise :exc:`ValueError` when no
                 version can be determined for the module.
+            strict: A shortcut to turn on all the other forbid and require flags.
 
         Returns:
             A new :class:`VersionInfo` instance.
@@ -123,6 +125,7 @@ class VersionInfo:
             forbid_locals=forbid_locals,
             forbid_lambda=forbid_lambda,
             require_version=require_version,
+            strict=strict,
         )
         return info
 
@@ -132,17 +135,18 @@ class VersionInfo:
         forbid_locals: bool = False,
         forbid_lambda: bool = False,
         require_version: bool = False,
+        strict: bool = False,
     ) -> Self:
-        if forbid_main and self.in_main:
+        if (strict or forbid_main) and self.in_main:
             raise ValueError(f"Found forbidden module '__main__' in module for {self}")
 
-        if forbid_locals and self.is_local:
+        if (strict or forbid_locals) and self.is_local:
             raise ValueError(f"Found forbidden <locals> in qualname for {self}")
 
-        if forbid_lambda and self.is_lambda:
+        if (strict or forbid_lambda) and self.is_lambda:
             raise ValueError(f"Found forbidden <lambda> in qualname for {self}")
 
-        if require_version and not self.has_version:
+        if (strict or require_version) and not self.has_version:
             raise ValueError(f"Could not find a version for {self}")
 
         return self
