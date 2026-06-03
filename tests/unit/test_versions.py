@@ -378,7 +378,7 @@ class TestVersionInfoOf(unittest.TestCase):
         self.assertEqual(info.qualname, "_dummy_function")
 
     def test_lambda_function(self) -> None:
-        _lambda = lambda: 5
+        _lambda = lambda: 5  # noqa: E731
         info = VersionInfo.of(_lambda)
         self.assertIn("<lambda>", info.qualname)
 
@@ -471,7 +471,7 @@ class TestVersionInfoOf(unittest.TestCase):
     # -- forbid_lambda ------------------------------------------------------
 
     def test_forbid_lambda_raises(self) -> None:
-        _lambda = lambda: 5
+        _lambda = lambda: 5  # noqa: E731
 
         self.assertIn("<lambda>", _lambda.__qualname__)
         with self.assertRaises(ValueError, msg="<lambda>"):
@@ -481,7 +481,7 @@ class TestVersionInfoOf(unittest.TestCase):
             VersionInfo.of(_lambda, strict=True)
 
     def test_forbid_lambda_false_allows_lambda(self) -> None:
-        _lambda = lambda: 5
+        _lambda = lambda: 5  # noqa: E731
 
         info = VersionInfo.of(_lambda, forbid_lambda=False)
         self.assertIn("<lambda>", info.qualname)
