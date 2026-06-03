@@ -51,6 +51,15 @@ class VersionInfo:
             return self.module
         return f"{self.module}.{self.qualname}"
 
+    @property
+    def usable_name(self) -> str:
+        if self.qualname is None:
+            return self.module
+        elif self.module == "builtins":
+            return self.qualname
+        else:
+            return self.fully_qualified_name
+
     @classmethod
     def of(
         cls,
