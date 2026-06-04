@@ -51,6 +51,31 @@ class VersionInfo:
             return self.module
         return f"{self.module}.{self.qualname}"
 
+    @property
+    def findable_at(self) -> str:
+        if self.qualname is None:
+            return self.module
+        elif self.module == "builtins":
+            return self.qualname
+        else:
+            return self.fully_qualified_name
+
+    @property
+    def is_local(self) -> bool:
+        return self.qualname is not None and "<locals>" in self.qualname
+
+    @property
+    def is_lambda(self) -> bool:
+        return self.qualname is not None and "<lambda>" in self.qualname
+
+    @property
+    def in_main(self) -> bool:
+        return "__main__" in self.module
+
+    @property
+    def has_version(self) -> bool:
+        return self.version is not None
+
     @classmethod
     def of(
         cls,
@@ -58,7 +83,9 @@ class VersionInfo:
         version_scraping: VersionScrapingMap | None = None,
         forbid_main: bool = False,
         forbid_locals: bool = False,
+        forbid_lambda: bool = False,
         require_version: bool = False,
+        strict: bool = False,
     ) -> VersionInfo:
         """
         Construct a :class:`VersionInfo` by introspecting *obj*.
@@ -76,8 +103,11 @@ class VersionInfo:
             forbid_locals: If ``True``, raise :exc:`ValueError` when the
                 qualname contains ``<locals>`` (i.e. the type was defined
                 inside a function).
+            forbid_lambda: If ``True``, raise :exc:`ValueError` when the qualname
+                contains ``<lambda>``.
             require_version: If ``True``, raise :exc:`ValueError` when no
                 version can be determined for the module.
+            strict: A shortcut to turn on all the other forbid and require flags.
 
         Returns:
             A new :class:`VersionInfo` instance.
@@ -93,7 +123,9 @@ class VersionInfo:
         info.validate_constraints(
             forbid_main=forbid_main,
             forbid_locals=forbid_locals,
+            forbid_lambda=forbid_lambda,
             require_version=require_version,
+            strict=strict,
         )
         return info
 
@@ -101,15 +133,20 @@ class VersionInfo:
         self,
         forbid_main: bool = False,
         forbid_locals: bool = False,
+        forbid_lambda: bool = False,
         require_version: bool = False,
+        strict: bool = False,
     ) -> Self:
-        if forbid_main and "__main__" in self.module:
+        if (strict or forbid_main) and self.in_main:
             raise ValueError(f"Found forbidden module '__main__' in module for {self}")
 
-        if forbid_locals and self.qualname is not None and "<locals>" in self.qualname:
+        if (strict or forbid_locals) and self.is_local:
             raise ValueError(f"Found forbidden <locals> in qualname for {self}")
 
-        if require_version and self.version is None:
+        if (strict or forbid_lambda) and self.is_lambda:
+            raise ValueError(f"Found forbidden <lambda> in qualname for {self}")
+
+        if (strict or require_version) and not self.has_version:
             raise ValueError(f"Could not find a version for {self}")
 
         return self

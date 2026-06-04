@@ -367,6 +367,7 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(_Dummy)
         self.assertEqual(info.module, _Dummy.__module__)
         self.assertEqual(info.qualname, "_Dummy")
+        self.assertEqual(info.findable_at, info.fully_qualified_name)
 
     def test_instance(self) -> None:
         info = VersionInfo.of(_Dummy())
@@ -376,16 +377,23 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(_dummy_function)
         self.assertEqual(info.qualname, "_dummy_function")
 
+    def test_lambda_function(self) -> None:
+        _lambda = lambda: 5  # noqa: E731
+        info = VersionInfo.of(_lambda)
+        self.assertIn("<lambda>", info.qualname)
+
     def test_builtin_instance(self) -> None:
         info = VersionInfo.of(42)
         self.assertEqual(info.module, "builtins")
         self.assertEqual(info.qualname, "int")
+        self.assertEqual(info.findable_at, info.qualname)
         self.assertIsNotNone(info.version)
 
     def test_builtin_type(self) -> None:
         info = VersionInfo.of(int)
         self.assertEqual(info.module, "builtins")
         self.assertEqual(info.qualname, "int")
+        self.assertEqual(info.findable_at, info.qualname)
         self.assertIsNotNone(info.version)
 
     # -- modules ------------------------------------------------------------
@@ -393,6 +401,7 @@ class TestVersionInfoOf(unittest.TestCase):
     def test_module(self) -> None:
         info = VersionInfo.of(os)
         self.assertEqual(info.module, "os")
+        self.assertEqual(info.findable_at, info.module)
         self.assertIsNone(info.qualname)
         self.assertEqual(info.version, PYTHON_VERSION)
 
@@ -417,6 +426,9 @@ class TestVersionInfoOf(unittest.TestCase):
         with self.assertRaises(ValueError, msg="__main__"):
             VersionInfo.of(obj, forbid_main=True)
 
+        with self.assertRaises(ValueError, msg="__main__"):
+            VersionInfo.of(obj, strict=True)
+
     def test_forbid_main_false_allows_main(self) -> None:
         obj = mock.MagicMock(spec=type)
         obj.__module__ = "__main__"
@@ -438,6 +450,9 @@ class TestVersionInfoOf(unittest.TestCase):
         with self.assertRaises(ValueError, msg="<locals>"):
             VersionInfo.of(local_cls, forbid_locals=True)
 
+        with self.assertRaises(ValueError, msg="<locals>"):
+            VersionInfo.of(local_cls, strict=True)
+
     def test_forbid_locals_false_allows_locals(self) -> None:
         def _make_local() -> type:
             class _Local:
@@ -454,6 +469,29 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(os, forbid_locals=True)
         self.assertIsNone(info.qualname)
 
+    # -- forbid_lambda ------------------------------------------------------
+
+    def test_forbid_lambda_raises(self) -> None:
+        _lambda = lambda: 5  # noqa: E731
+
+        self.assertIn("<lambda>", _lambda.__qualname__)
+        with self.assertRaises(ValueError, msg="<lambda>"):
+            VersionInfo.of(_lambda, forbid_lambda=True)
+
+        with self.assertRaises(ValueError, msg="<lambda>"):
+            VersionInfo.of(_lambda, strict=True)
+
+    def test_forbid_lambda_false_allows_lambda(self) -> None:
+        _lambda = lambda: 5  # noqa: E731
+
+        info = VersionInfo.of(_lambda, forbid_lambda=False)
+        self.assertIn("<lambda>", info.qualname)
+
+    def test_forbid_lambda_ok_for_module(self) -> None:
+        """forbid_lambda should not crash when qualname is None (modules)."""
+        info = VersionInfo.of(os, forbid_lambda=True)
+        self.assertIsNone(info.qualname)
+
     # -- require_version ----------------------------------------------------
 
     def test_require_version_raises_when_missing(self) -> None:
@@ -467,6 +505,12 @@ class TestVersionInfoOf(unittest.TestCase):
             self.assertRaises(ValueError, msg="could not be found"),
         ):
             VersionInfo.of(fake_obj, require_version=True)
+
+        with (
+            mock.patch.dict("sys.modules", {"no_version_pkg": fake_mod}),
+            self.assertRaises(ValueError, msg="could not be found"),
+        ):
+            VersionInfo.of(fake_obj, strict=True)
 
     def test_require_version_ok_when_present(self) -> None:
         info = VersionInfo.of(42, require_version=True)
@@ -504,6 +548,8 @@ class TestValidateConstraints(unittest.TestCase):
         info = VersionInfo(module="__main__", qualname="Foo", version=None)
         with self.assertRaises(ValueError, msg="__main__"):
             info.validate_constraints(forbid_main=True)
+        with self.assertRaises(ValueError, msg="__main__"):
+            info.validate_constraints(strict=True)
 
     def test_forbid_main_passes_normal_module(self) -> None:
         info = VersionInfo(module="some.pkg", qualname="Foo", version=None)
@@ -513,6 +559,8 @@ class TestValidateConstraints(unittest.TestCase):
         info = VersionInfo(module="m", qualname="f.<locals>.Cls", version=None)
         with self.assertRaises(ValueError, msg="<locals>"):
             info.validate_constraints(forbid_locals=True)
+        with self.assertRaises(ValueError, msg="<locals>"):
+            info.validate_constraints(strict=True)
 
     def test_forbid_locals_passes_normal_qualname(self) -> None:
         info = VersionInfo(module="m", qualname="Outer.Inner", version="1.0")
@@ -522,10 +570,27 @@ class TestValidateConstraints(unittest.TestCase):
         info = VersionInfo(module="os", qualname=None, version=PYTHON_VERSION)
         self.assertIs(info.validate_constraints(forbid_locals=True), info)
 
+    def test_forbid_lambda_raises(self) -> None:
+        info = VersionInfo(module="m", qualname="mod.<lambda>", version=None)
+        with self.assertRaises(ValueError, msg="<lambda>"):
+            info.validate_constraints(forbid_lambda=True)
+        with self.assertRaises(ValueError, msg="<lambda>"):
+            info.validate_constraints(strict=True)
+
+    def test_forbid_lambda_passes_normal_qualname(self) -> None:
+        info = VersionInfo(module="m", qualname="Outer.Inner", version="1.0")
+        self.assertIs(info.validate_constraints(forbid_lambda=True), info)
+
+    def test_forbid_lambda_passes_none_qualname(self) -> None:
+        info = VersionInfo(module="os", qualname=None, version=PYTHON_VERSION)
+        self.assertIs(info.validate_constraints(forbid_lambda=True), info)
+
     def test_require_version_raises_when_none(self) -> None:
         info = VersionInfo(module="m", qualname="X", version=None)
         with self.assertRaises(ValueError):
             info.validate_constraints(require_version=True)
+        with self.assertRaises(ValueError):
+            info.validate_constraints(strict=True)
 
     def test_require_version_passes_when_present(self) -> None:
         info = VersionInfo(module="m", qualname="X", version="1.0.0")
@@ -542,9 +607,7 @@ class TestValidateConstraints(unittest.TestCase):
         """An info that violates multiple constraints raises on the first check."""
         info = VersionInfo(module="__main__", qualname="f.<locals>.C", version=None)
         with self.assertRaises(ValueError, msg="__main__"):
-            info.validate_constraints(
-                forbid_main=True, forbid_locals=True, require_version=True
-            )
+            info.validate_constraints(strict=True)
 
 
 # ---------------------------------------------------------------------------
