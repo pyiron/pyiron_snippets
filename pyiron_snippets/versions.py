@@ -52,7 +52,7 @@ class VersionInfo:
         return f"{self.module}.{self.qualname}"
 
     @property
-    def usable_name(self) -> str:
+    def findable_at(self) -> str:
         if self.qualname is None:
             return self.module
         elif self.module == "builtins":

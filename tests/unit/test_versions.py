@@ -367,7 +367,7 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(_Dummy)
         self.assertEqual(info.module, _Dummy.__module__)
         self.assertEqual(info.qualname, "_Dummy")
-        self.assertEqual(info.usable_name, info.fully_qualified_name)
+        self.assertEqual(info.findable_at, info.fully_qualified_name)
 
     def test_instance(self) -> None:
         info = VersionInfo.of(_Dummy())
@@ -386,14 +386,14 @@ class TestVersionInfoOf(unittest.TestCase):
         info = VersionInfo.of(42)
         self.assertEqual(info.module, "builtins")
         self.assertEqual(info.qualname, "int")
-        self.assertEqual(info.usable_name, info.qualname)
+        self.assertEqual(info.findable_at, info.qualname)
         self.assertIsNotNone(info.version)
 
     def test_builtin_type(self) -> None:
         info = VersionInfo.of(int)
         self.assertEqual(info.module, "builtins")
         self.assertEqual(info.qualname, "int")
-        self.assertEqual(info.usable_name, info.qualname)
+        self.assertEqual(info.findable_at, info.qualname)
         self.assertIsNotNone(info.version)
 
     # -- modules ------------------------------------------------------------
@@ -401,7 +401,7 @@ class TestVersionInfoOf(unittest.TestCase):
     def test_module(self) -> None:
         info = VersionInfo.of(os)
         self.assertEqual(info.module, "os")
-        self.assertEqual(info.usable_name, info.module)
+        self.assertEqual(info.findable_at, info.module)
         self.assertIsNone(info.qualname)
         self.assertEqual(info.version, PYTHON_VERSION)
 
