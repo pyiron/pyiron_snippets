@@ -122,6 +122,8 @@ class DirectoryObject:
     def create_subdirectory(self, path: str | Path | None = None) -> DirectoryObject:
         if path is None:
             new_path = self.path / f"subdir_{uuid.uuid4().hex}"
+        else:
+            new_path = self.path / path
         return DirectoryObject(new_path)
 
     def is_empty(self) -> bool:
