@@ -60,6 +60,12 @@ class TestFiles(unittest.TestCase):
         _ = self.directory.create_subdirectory("another_test")
         self.assertTrue(Path("test/another_test").exists())
 
+    def test_create_subdirectory_with_generated_name(self):
+        subdirectory = self.directory.create_subdirectory()
+        self.assertTrue(subdirectory.path.exists())
+        self.assertEqual(Path("test"), subdirectory.path.parent)
+        self.assertTrue(subdirectory.path.name.startswith("subdir_"))
+
     def test_is_empty(self):
         self.assertTrue(self.directory.is_empty())
         self.directory.write(file_name="test.txt", content="something")
