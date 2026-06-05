@@ -117,10 +117,15 @@ class DirectoryObject:
         return self.get_path(file_name).is_file()
 
     def write(
-        self, content: str, file_name: str | Path | None = None, mode: str = "w",
+        self,
+        content: str,
+        file_name: str | Path | None = None,
+        mode: str = "w",
     ) -> Path:
         if file_name is None:
-            file_name = "file_" + hashlib.sha256(content.encode()).hexdigest()[:16] + ".dat"
+            file_name = (
+                "file_" + hashlib.sha256(content.encode()).hexdigest()[:16] + ".dat"
+            )
         with self.get_path(file_name).open(mode=mode) as f:
             f.write(content)
         return self.get_path(file_name)
