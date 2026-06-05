@@ -48,7 +48,9 @@ class TestFiles(unittest.TestCase):
 
     def test_write_with_generated_file_name(self):
         content = "something"
-        expected_file_name = f"file_{hashlib.sha256(content.encode()).hexdigest()[:16]}.dat"
+        expected_file_name = (
+            f"file_{hashlib.sha256(content.encode()).hexdigest()[:16]}.dat"
+        )
         path = self.directory.write(content=content)
 
         self.assertEqual(Path("test") / expected_file_name, path)
