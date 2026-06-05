@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import tarfile
 import uuid
 from pathlib import Path
@@ -115,9 +116,14 @@ class DirectoryObject:
     def file_exists(self, file_name):
         return self.get_path(file_name).is_file()
 
-    def write(self, file_name, content, mode="w"):
+    def write(
+        self, content: str, file_name: str | Path | None = None, mode: str = "w",
+    ) -> Path:
+        if file_name is None:
+            file_name = "file_" + hashlib.sha256(content.encode()).hexdigest()[:16] + ".dat"
         with self.get_path(file_name).open(mode=mode) as f:
             f.write(content)
+        return self.get_path(file_name)
 
     def create_subdirectory(self, path: str | Path | None = None) -> DirectoryObject:
         if path is None:
