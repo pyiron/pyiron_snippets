@@ -122,6 +122,18 @@ class DirectoryObject:
         file_name: str | Path | None = None,
         mode: str = "w",
     ) -> Path:
+        """
+        Write content to a file and return the file path.
+
+        Args:
+            content (str): The content to write.
+            file_name (str | Path | None): The file name. If None, a name is generated
+                from a hash of the content.
+            mode (str): The file opening mode.
+
+        Returns:
+            Path: The path of the written file.
+        """
         if file_name is None:
             file_name = (
                 "file_" + hashlib.sha256(content.encode()).hexdigest()[:16] + ".dat"

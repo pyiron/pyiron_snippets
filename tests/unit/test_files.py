@@ -1,3 +1,4 @@
+import hashlib
 import pickle
 import tarfile
 import unittest
@@ -36,13 +37,24 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(Path("test").exists() and Path("test").is_dir())
 
     def test_write(self):
-        self.directory.write(file_name="test.txt", content="something")
+        path = self.directory.write(file_name="test.txt", content="something")
+        self.assertEqual(Path("test/test.txt"), path)
         self.assertTrue(self.directory.file_exists("test.txt"))
         self.assertTrue(
             "test/test.txt"
             in [ff.replace("\\", "/") for ff in self.directory.list_content()["file"]]
         )
         self.assertEqual(len(self.directory), 1)
+
+    def test_write_with_generated_file_name(self):
+        content = "something"
+        expected_file_name = f"file_{hashlib.sha256(content.encode()).hexdigest()[:16]}.dat"
+        path = self.directory.write(content=content)
+
+        self.assertEqual(Path("test") / expected_file_name, path)
+        self.assertTrue(self.directory.file_exists(expected_file_name))
+        with path.open() as f:
+            self.assertEqual(content, f.read())
 
     def test_del(self):
         self.directory = DirectoryObject("something")
