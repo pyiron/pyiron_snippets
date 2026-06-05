@@ -59,12 +59,14 @@ class TestFiles(unittest.TestCase):
             self.assertEqual(content, f.read())
 
     def test_write_rejects_path_outside_directory(self):
+        outside_path = self.directory.path.parent / "outside.txt"
+
         with self.assertRaisesRegex(
             ValueError, "file_name must resolve within the directory"
         ):
             self.directory.write(file_name="../outside.txt", content="something")
 
-        self.assertFalse(Path("outside.txt").exists())
+        self.assertFalse(outside_path.exists())
 
     def test_del(self):
         self.directory = DirectoryObject("something")
