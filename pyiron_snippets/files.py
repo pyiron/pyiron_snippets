@@ -138,9 +138,13 @@ class DirectoryObject:
             file_name = (
                 "file_" + hashlib.sha256(content.encode()).hexdigest()[:16] + ".dat"
             )
-        with self.get_path(file_name).open(mode=mode) as f:
+        path = self.get_path(file_name)
+        base = self.path.resolve()
+        if not path.resolve().is_relative_to(base):
+            raise ValueError("file_name must resolve within the directory")
+        with path.open(mode=mode) as f:
             f.write(content)
-        return self.get_path(file_name)
+        return path
 
     def create_subdirectory(self, path: str | Path | None = None) -> DirectoryObject:
         if path is None:
