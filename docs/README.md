@@ -188,7 +188,7 @@ Shortcuts for filesystem manipulation
 >>> from pyiron_snippets import files
 >>>
 >>> d = files.DirectoryObject("some_dir")
->>> d.write(content="Some content", file_name="my_filename.txt")
+>>> d.dump(content="Some content", file_name="my_filename.txt")
 PosixPath('some_dir/my_filename.txt')
 >>> d.file_exists("my_filename.txt")
 True
