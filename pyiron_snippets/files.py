@@ -7,7 +7,12 @@ from pathlib import Path
 from typing import cast
 
 
-def delete_files_and_directories_recursively(path):
+def delete_files_and_directories_recursively(path: Path) -> None:
+    """Recursively delete all files and subdirectories under ``path``, then remove ``path`` itself.
+
+    Args:
+        path (Path): The root directory to delete.
+    """
     if not path.exists():
         return
     for item in path.rglob("*"):
@@ -18,7 +23,17 @@ def delete_files_and_directories_recursively(path):
     path.rmdir()
 
 
-def categorize_folder_items(folder_path):
+def categorize_folder_items(folder_path: Path) -> dict[str, list[str]]:
+    """Categorize all items in a directory by their filesystem type.
+
+    Args:
+        folder_path (Path): The directory to inspect.
+
+    Returns:
+        dict[str, list[str]]: A mapping from type name (e.g. ``"file"``, ``"dir"``,
+            ``"symlink"``) to a list of absolute string paths belonging to that type.
+            Returns an empty dict if ``folder_path`` is not a directory.
+    """
     if not folder_path.is_dir():
         return {}
     types = [
@@ -31,7 +46,7 @@ def categorize_folder_items(folder_path):
         "fifo",
         "socket",
     ]
-    results = {t: [] for t in types}
+    results: dict[str, list[str]] = {t: [] for t in types}
 
     for item in folder_path.iterdir():
         for tt in types:
@@ -86,34 +101,65 @@ class DirectoryObject:
         self.path: Path = path
         self.create()
 
-    def __getstate__(self):
+    def __getstate__(self) -> object:
+        """Protect the directory from deletion when pickling."""
         self._protected = True
         return self.path.__getstate__()
 
-    def __del__(self):
+    def __del__(self) -> None:
+        """Delete the directory on garbage collection unless protected."""
         if not self._protected:
             self.delete(only_if_empty=False)
 
-    def create(self):
+    def create(self) -> None:
+        """Create the directory (and any missing parents) if it does not already exist."""
         self.path.mkdir(parents=True, exist_ok=True)
 
-    def delete(self, only_if_empty: bool = False):
+    def delete(self, only_if_empty: bool = False) -> None:
+        """Delete the directory and all its contents.
+
+        Args:
+            only_if_empty (bool): If True, only delete when the directory is empty.
+        """
         if self.is_empty() or not only_if_empty:
             delete_files_and_directories_recursively(self.path)
 
-    def list_content(self):
+    def list_content(self) -> dict[str, list[str]]:
+        """Return a categorized listing of the directory's contents.
+
+        Returns:
+            dict[str, list[str]]: See :func:`categorize_folder_items`.
+        """
         return categorize_folder_items(self.path)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Return the total number of items in the directory across all types."""
         return sum([len(cc) for cc in self.list_content().values()])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return a human-readable representation showing the path and contents."""
         return f"DirectoryObject(directory='{self.path}')\n{self.list_content()}"
 
-    def get_path(self, file_name):
+    def get_path(self, file_name: str | Path) -> Path:
+        """Return the full path for a file name relative to this directory.
+
+        Args:
+            file_name (str | Path): The relative file name or sub-path.
+
+        Returns:
+            Path: Absolute path within the directory.
+        """
         return self.path / file_name
 
-    def file_exists(self, file_name):
+    def file_exists(self, file_name: str | Path) -> bool:
+        """Check whether a file exists inside this directory.
+
+        Args:
+            file_name (str | Path): The relative file name or sub-path.
+
+        Returns:
+            bool: True if the file exists, False otherwise.
+        """
         return self.get_path(file_name).is_file()
 
     def dump(
@@ -161,6 +207,15 @@ class DirectoryObject:
         return self.dump(content=content, file_name=file_name, mode=mode)
 
     def create_subdirectory(self, path: str | Path | None = None) -> DirectoryObject:
+        """Create and return a subdirectory inside this directory.
+
+        Args:
+            path (str | Path | None): Relative path for the subdirectory. If None,
+                a unique name is generated automatically.
+
+        Returns:
+            DirectoryObject: The newly created subdirectory.
+        """
         if path is None:
             new_path = self.path / f"subdir_{uuid.uuid4().hex}"
         else:
@@ -168,15 +223,33 @@ class DirectoryObject:
         return DirectoryObject(new_path)
 
     def is_empty(self) -> bool:
+        """Return True if the directory contains no items."""
         return len(self) == 0
 
-    def remove_files(self, *files: str):
+    def remove_files(self, *files: str) -> None:
+        """Remove one or more files from this directory.
+
+        Silently ignores names that do not correspond to an existing file.
+
+        Args:
+            *files (str): Relative file names to remove.
+        """
         for file in files:
             path = self.get_path(file)
             if path.is_file():
                 path.unlink()
 
-    def compress(self, exclude_files: list[str | Path] | None = None):
+    def compress(self, exclude_files: list[str | Path] | None = None) -> None:
+        """Compress the directory contents into a ``<name>.tar.gz`` archive.
+
+        Files included in the archive are removed from the directory afterwards.
+        If the archive already exists, the method returns without doing anything.
+
+        Args:
+            exclude_files (list[str | Path] | None): Files to keep on disk and
+                omit from the archive. Paths may be absolute or relative to the
+                directory.
+        """
         directory = self.path.resolve()
         output_tar_path = directory.with_suffix(".tar.gz")
         if output_tar_path.exists():
@@ -199,7 +272,12 @@ class DirectoryObject:
         for file in files_to_delete:
             file.unlink()
 
-    def decompress(self):
+    def decompress(self) -> None:
+        """Extract a ``<name>.tar.gz`` archive into this directory.
+
+        The archive is removed after successful extraction. If no archive exists,
+        the method returns without doing anything.
+        """
         directory = self.path.resolve()
         tar_path = directory.with_suffix(".tar.gz")
         if not tar_path.exists():
