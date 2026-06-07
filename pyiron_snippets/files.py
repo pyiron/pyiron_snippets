@@ -162,7 +162,7 @@ class DirectoryObject:
         """
         return self.get_path(file_name).is_file()
 
-    def write(
+    def dump(
         self,
         content: str,
         file_name: str | Path | None = None,
@@ -191,6 +191,20 @@ class DirectoryObject:
         with path.open(mode=mode) as f:
             f.write(content)
         return path
+
+    def write(self, file_name, content, mode="w"):
+        """
+        .. deprecated::
+            Use :meth:`dump` instead.
+        """
+        import warnings
+
+        warnings.warn(
+            "DirectoryObject.write is deprecated, use dump instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.dump(content=content, file_name=file_name, mode=mode)
 
     def create_subdirectory(self, path: str | Path | None = None) -> DirectoryObject:
         """Create and return a subdirectory inside this directory.
