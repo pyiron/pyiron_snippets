@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import tarfile
 import uuid
 from pathlib import Path
@@ -115,9 +116,49 @@ class DirectoryObject:
     def file_exists(self, file_name):
         return self.get_path(file_name).is_file()
 
-    def write(self, file_name, content, mode="w"):
-        with self.get_path(file_name).open(mode=mode) as f:
+    def dump(
+        self,
+        content: str,
+        file_name: str | Path | None = None,
+        mode: str = "w",
+    ) -> Path:
+        """
+        Write content to a file and return the file path.
+
+        Args:
+            content (str): The content to write.
+            file_name (str | Path | None): The file name. If None, a name is generated
+                from a hash of the content.
+            mode (str): The file opening mode.
+
+        Returns:
+            Path: The path of the written file.
+        """
+        if file_name is None:
+            file_name = (
+                "file_" + hashlib.sha256(content.encode()).hexdigest()[:16] + ".dat"
+            )
+        path = self.get_path(file_name)
+        base = self.path.resolve()
+        if not path.resolve().is_relative_to(base):
+            raise ValueError("file_name must resolve within the directory")
+        with path.open(mode=mode) as f:
             f.write(content)
+        return path
+
+    def write(self, file_name, content, mode="w"):
+        """
+        .. deprecated::
+            Use :meth:`dump` instead.
+        """
+        import warnings
+
+        warnings.warn(
+            "DirectoryObject.write is deprecated, use dump instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.dump(content=content, file_name=file_name, mode=mode)
 
     def create_subdirectory(self, path: str | Path | None = None) -> DirectoryObject:
         if path is None:

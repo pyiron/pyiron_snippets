@@ -1,3 +1,4 @@
+import hashlib
 import pickle
 import tarfile
 import unittest
@@ -36,13 +37,47 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(Path("test").exists() and Path("test").is_dir())
 
     def test_write(self):
-        self.directory.write(file_name="test.txt", content="something")
+        with self.assertWarns(DeprecationWarning):
+            path = self.directory.write(file_name="test.txt", content="something")
+        self.assertEqual(Path("test/test.txt"), path)
         self.assertTrue(self.directory.file_exists("test.txt"))
         self.assertTrue(
             "test/test.txt"
             in [ff.replace("\\", "/") for ff in self.directory.list_content()["file"]]
         )
         self.assertEqual(len(self.directory), 1)
+
+    def test_dump(self):
+        path = self.directory.dump(file_name="test.txt", content="something")
+        self.assertEqual(Path("test/test.txt"), path)
+        self.assertTrue(self.directory.file_exists("test.txt"))
+        self.assertTrue(
+            "test/test.txt"
+            in [ff.replace("\\", "/") for ff in self.directory.list_content()["file"]]
+        )
+        self.assertEqual(len(self.directory), 1)
+
+    def test_dump_with_generated_file_name(self):
+        content = "something"
+        expected_file_name = (
+            f"file_{hashlib.sha256(content.encode()).hexdigest()[:16]}.dat"
+        )
+        path = self.directory.dump(content=content)
+
+        self.assertEqual(Path("test") / expected_file_name, path)
+        self.assertTrue(self.directory.file_exists(expected_file_name))
+        with path.open() as f:
+            self.assertEqual(content, f.read())
+
+    def test_dump_rejects_path_outside_directory(self):
+        outside_path = self.directory.path.parent / "outside.txt"
+
+        with self.assertRaisesRegex(
+            ValueError, "file_name must resolve within the directory"
+        ):
+            self.directory.dump(file_name="../outside.txt", content="something")
+
+        self.assertFalse(outside_path.exists())
 
     def test_del(self):
         self.directory = DirectoryObject("something")
@@ -68,7 +103,7 @@ class TestFiles(unittest.TestCase):
 
     def test_is_empty(self):
         self.assertTrue(self.directory.is_empty())
-        self.directory.write(file_name="test.txt", content="something")
+        self.directory.dump(file_name="test.txt", content="something")
         self.assertFalse(self.directory.is_empty())
 
     def test_delete(self):
@@ -76,7 +111,7 @@ class TestFiles(unittest.TestCase):
             Path("test").exists() and Path("test").is_dir(),
             msg="Sanity check on initial state",
         )
-        self.directory.write(file_name="test.txt", content="something")
+        self.directory.dump(file_name="test.txt", content="something")
         self.directory.delete(only_if_empty=True)
         self.assertFalse(
             self.directory.is_empty(),
@@ -89,9 +124,9 @@ class TestFiles(unittest.TestCase):
         self.directory = DirectoryObject("test")  # Rebuild it so the tearDown works
 
     def test_remove(self):
-        self.directory.write(file_name="test1.txt", content="something")
-        self.directory.write(file_name="test2.txt", content="something")
-        self.directory.write(file_name="test3.txt", content="something")
+        self.directory.dump(file_name="test1.txt", content="something")
+        self.directory.dump(file_name="test2.txt", content="something")
+        self.directory.dump(file_name="test3.txt", content="something")
         self.assertEqual(3, len(self.directory), msg="Sanity check on initial state")
         self.directory.remove_files("test1.txt", "test2.txt")
         self.assertEqual(
@@ -115,8 +150,8 @@ class TestFiles(unittest.TestCase):
     def test_compress(self):
         while Path("test.tar.gz").exists():
             Path("test.tar.gz").unlink()
-        self.directory.write(file_name="test1.txt", content="something")
-        self.directory.write(file_name="test2.txt", content="something")
+        self.directory.dump(file_name="test1.txt", content="something")
+        self.directory.dump(file_name="test2.txt", content="something")
         self.directory.compress(exclude_files=["test1.txt"])
         self.assertTrue(Path("test.tar.gz").exists())
         with tarfile.open("test.tar.gz", "r:*") as f:
