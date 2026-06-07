@@ -46,7 +46,7 @@ def categorize_folder_items(folder_path: Path) -> dict[str, list[str]]:
         "fifo",
         "socket",
     ]
-    results = {t: [] for t in types}
+    results: dict[str, list[str]] = {t: [] for t in types}
 
     for item in folder_path.iterdir():
         for tt in types:
@@ -101,7 +101,7 @@ class DirectoryObject:
         self.path: Path = path
         self.create()
 
-    def __getstate__(self) -> str:
+    def __getstate__(self) -> object:
         """Protect the directory from deletion when pickling."""
         self._protected = True
         return self.path.__getstate__()
