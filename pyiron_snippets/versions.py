@@ -9,10 +9,12 @@ import importlib
 import sys
 from collections.abc import Callable
 from types import BuiltinMethodType, ModuleType
-from typing import Any, Self, TypeAlias
+from typing import Any, Self, TypeAlias, cast
 
 VersionScraperType: TypeAlias = Callable[[str], str | None]
 VersionScrapingMap: TypeAlias = dict[str, VersionScraperType]
+
+_NO_ATTRIBUTE_SENTINEL = object()
 
 
 @dataclasses.dataclass(frozen=True)
@@ -193,24 +195,25 @@ def get_module(obj: Any) -> str:
         return obj.__name__
 
     # Try the obvious path first
-    module = getattr(obj, "__module__", None)
-    if module is not None:
-        return module
+    module = getattr(obj, "__module__", _NO_ATTRIBUTE_SENTINEL)
+    if module is not _NO_ATTRIBUTE_SENTINEL and module is not None:
+        return cast(str, module)  # Return a non-string __module__ at your own risk
 
     # For bound builtin methods, look up the defining class
     if isinstance(obj, BuiltinMethodType):
         # obj.__self__ is the instance, obj.__name__ is the method name
         self_obj = getattr(obj, "__self__", None)
         if self_obj is not None:
-            for cls in type(self_obj).__mro__:
-                if obj.__name__ in cls.__dict__:
-                    module = getattr(cls.__dict__[obj.__name__], "__module__", None)
-                    if module is not None:
-                        return module
-            # Fall back to the type's module
-            module = getattr(type(self_obj), "__module__", None)
-            if module is not None:
-                return module
+            return get_module(type(self_obj))
+
+    # An explicit None __module__ (not a builtin method we could resolve) means
+    # the object is module-aware but its module is genuinely unknown; don't
+    # paper over that with the type's module, just give back the None
+    if module is None:
+        raise ValueError(
+            f"Found an explicit None __module__ on obj {obj}; refusing to fall "
+            f"back to type(obj) {type(obj)}."
+        )
 
     # Last resort
     module = getattr(type(obj), "__module__", None)

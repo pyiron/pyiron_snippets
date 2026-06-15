@@ -153,6 +153,42 @@ class TestGetModule(unittest.TestCase):
             get_module(Pathological())
         self.assertIn("Could not find a module", str(ctx.exception))
 
+    def test_compiled_function(self):
+        code = compile("def f(x, y): return x + y", "<string>", "exec")
+        ns = {}
+        exec(code, ns)
+        f = ns["f"]
+        with self.assertRaisesRegex(ValueError, "Found an explicit None __module__ "):
+            get_module(f)
+
+    def test_compiled_object(self):
+        code = compile(
+            "from pyiron_snippets import versions; obj = versions.VersionInfo(None, None, None)",
+            "<string>",
+            "exec",
+        )
+        ns = {}
+        exec(code, ns)
+        obj = ns["obj"]
+        mod = get_module(obj)
+        self.assertEqual(mod, "pyiron_snippets.versions")
+
+    def test_compiled_builtin_object(self):
+        code = compile("obj = 42", "<string>", "exec")
+        ns = {}
+        exec(code, ns)
+        obj = ns["obj"]
+        mod = get_module(obj)
+        self.assertEqual(mod, "builtins")
+
+    def test_compiled_builtin_type(self):
+        code = compile("type_ = int", "<string>", "exec")
+        ns = {}
+        exec(code, ns)
+        type_ = ns["type_"]
+        mod = get_module(type_)
+        self.assertEqual(mod, "builtins")
+
 
 class TestGetQualname(unittest.TestCase):
     def test_class(self) -> None:
