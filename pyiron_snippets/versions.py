@@ -204,15 +204,7 @@ def get_module(obj: Any) -> str:
         # obj.__self__ is the instance, obj.__name__ is the method name
         self_obj = getattr(obj, "__self__", None)
         if self_obj is not None:
-            for cls in type(self_obj).__mro__:
-                if obj.__name__ in cls.__dict__:
-                    module = getattr(cls.__dict__[obj.__name__], "__module__", None)
-                    if module is not None:
-                        return module
-            # Fall back to the type's module
-            module = getattr(type(self_obj), "__module__", None)
-            if module is not None:
-                return module
+            return get_module(type(self_obj))
 
     # An explicit None __module__ (not a builtin method we could resolve) means
     # the object is module-aware but its module is genuinely unknown; don't
