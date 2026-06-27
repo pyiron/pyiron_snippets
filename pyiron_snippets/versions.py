@@ -153,6 +153,56 @@ class VersionInfo:
 
         return self
 
+    def retrieve(
+        self, version_scraping: VersionScrapingMap | None = None, strict: bool = False
+    ) -> object:
+        """
+        Import the object stored at the module and qualname.
+
+
+        Args:
+            version_scraping: Optional mapping from top-level package names to
+                callables that return a version string (or ``None``). Used to
+                handle packages that don't expose ``__version__``.
+            strict: If ``True``, raises a value error if the version of the imported
+                module does not match the versions tored here.
+
+        Returns:
+            The imported object.
+        """
+        try:
+            obj = importlib.import_module(self.module)
+            if strict:
+                actual_version = get_version(
+                    self.module, version_scraping=version_scraping
+                )
+                if actual_version != self.version:
+                    raise ValueError(
+                        f"When retrieving {self.fully_qualified_name}, {self.module} "
+                        f"had the version {actual_version} while {self.version} was "
+                        f"expected."
+                    )
+        except ModuleNotFoundError as e:
+            raise ModuleNotFoundError(
+                f"Could not import the module {self.module}. The most likely causes "
+                f"of this problem are a typo, or that the module is not yet in your "
+                f"system's PYTHONPATH. The latter can be checked from inside python "
+                f"with `import sys; print(sys.path)`."
+            ) from e
+
+        for k in (self.qualname or "").split("."):
+            if k == "":
+                break
+            try:
+                obj = getattr(obj, k)
+            except AttributeError:
+                # Try importing as a submodule
+                # This can be necessary of an __init__.py is empty and nothing else has
+                # referenced the module yet
+                current_path = f"{obj.__name__}.{k}"
+                obj = importlib.import_module(current_path)
+        return obj
+
 
 @dataclasses.dataclass(frozen=True)
 class VersionInfoFactory:
