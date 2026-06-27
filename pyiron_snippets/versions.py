@@ -44,8 +44,8 @@ class VersionInfo:
     """
 
     module: str
-    qualname: str | None
-    version: str | None
+    qualname: str | None = None
+    version: str | None = None
 
     @property
     def fully_qualified_name(self) -> str:
