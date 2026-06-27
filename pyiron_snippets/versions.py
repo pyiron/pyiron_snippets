@@ -178,9 +178,9 @@ class VersionInfo:
                 )
                 if actual_version != self.version:
                     raise ValueError(
-                        f"When retrieving {self.fully_qualified_name}, {self.module} "
-                        f"had the version {actual_version} while {self.version} was "
-                        f"expected."
+                        f"When retrieving {self.fully_qualified_name!r}, "
+                        f"{self.module!r} had the version {actual_version!r} while "
+                        f"{self.version!r} was expected."
                     )
         except ModuleNotFoundError as e:
             raise ModuleNotFoundError(
