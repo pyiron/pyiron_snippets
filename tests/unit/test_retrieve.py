@@ -70,7 +70,7 @@ class TestImportFromString(unittest.TestCase):
         )
 
     def test_import_nonexistent_attribute(self):
-        """Test that importing non-existent attribute raises AttributeError."""
+        """Test that importing non-existent attribute raises ModuleNotFoundError."""
         with self.assertRaises(ModuleNotFoundError) as cm:
             retrieve.import_from_string("os.nonexistent_attr")
         self.assertEqual(
