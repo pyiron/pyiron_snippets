@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import collections
 import dataclasses
+import importlib
 import io
 import os
+import pathlib
 import re
+import shutil
 import sys
+import textwrap
 import unittest
 from types import BuiltinMethodType, ModuleType
 from unittest import mock
 
+from pyiron_snippets import singleton
 from pyiron_snippets.versions import (
     VersionInfo,
     VersionInfoFactory,
@@ -747,6 +752,209 @@ class TestFullyQualifiedName(unittest.TestCase):
     def test_module_fqn_is_just_module(self) -> None:
         info = VersionInfo.of(os)
         self.assertEqual(info.fully_qualified_name, "os")
+
+
+class TestImportFromString(unittest.TestCase):
+    """Test cases for import_from_string function."""
+
+    def setUp(self):
+        """Add static test files to path for testing."""
+        self.static_path = pathlib.Path(__file__).parent.parent / "static"
+        if str(self.static_path) not in sys.path:
+            sys.path.insert(0, str(self.static_path))
+
+    def tearDown(self):
+        """Clean up sys.path and modules."""
+        if str(self.static_path) in sys.path:
+            sys.path.remove(str(self.static_path))
+        keys_to_remove = [k for k in sys.modules if k.startswith("test_module")]
+        for key in keys_to_remove:
+            del sys.modules[key]
+
+    def test_import_builtin_module(self):
+        """Test importing a standard library module."""
+        result = VersionInfo("os").retrieve()
+        import os
+
+        self.assertIs(result, os)
+
+    def test_import_builtin_function(self):
+        """Test importing a function from standard library."""
+        result = VersionInfo("os.path", "join").retrieve()
+        from os.path import join
+
+        self.assertIs(result, join)
+
+    def test_import_builtin_class(self):
+        """Test importing a class from standard library."""
+        result = VersionInfo("pathlib", "Path").retrieve()
+        from pathlib import Path
+
+        self.assertIs(result, Path)
+
+    def test_import_nested_attribute(self):
+        """Test importing deeply nested attributes."""
+        result = VersionInfo("unittest", "TestCase.assertEqual").retrieve()
+        self.assertEqual(result, unittest.TestCase.assertEqual)
+
+    def test_import_from_pyiron_snippets(self):
+        """Test importing from the pyiron_snippets package itself."""
+        result = VersionInfo("pyiron_snippets.singleton", "Singleton").retrieve()
+        self.assertIs(result, singleton.Singleton)
+
+    def test_import_nonexistent_module(self):
+        """Test that importing non-existent module raises ModuleNotFoundError."""
+        with self.assertRaises(ModuleNotFoundError) as cm:
+            VersionInfo("nonexistent_module").retrieve()
+        self.assertIn("nonexistent_module", str(cm.exception))
+        self.assertIn("PYTHONPATH", str(cm.exception))
+
+    def test_import_nonexistent_attribute(self):
+        """Test that importing non-existent attribute raises AttributeError."""
+        with self.assertRaises(ModuleNotFoundError) as cm:
+            VersionInfo("os", "nonexistent_attr").retrieve()
+        self.assertIn("nonexistent_attr", str(cm.exception))
+
+    def test_import_empty_string(self):
+        """Test edge case with empty string."""
+        with self.assertRaises(ValueError):
+            VersionInfo("").retrieve()
+
+    def test_import_single_name(self):
+        """Test importing just a module name without any dots."""
+        result = VersionInfo("sys").retrieve()
+        import sys
+
+        self.assertIs(result, sys)
+
+    def test_import_from_uninitialized_submodule(self):
+        """Test importing from a submodule that hasn't been initialized yet."""
+        test_pkg_dir = self.static_path / "test_module_uninit"
+        test_pkg_dir.mkdir(parents=True, exist_ok=True)
+
+        (test_pkg_dir / "__init__.py").write_text("")
+
+        submodule_content = textwrap.dedent("""
+            class UnInitClass:
+                value = 42
+            """).strip()
+        (test_pkg_dir / "submodule.py").write_text(submodule_content)
+
+        try:
+            uninitialized = importlib.import_module("test_module_uninit")
+            self.assertNotIn("submodule", dir(uninitialized))
+            result = VersionInfo(
+                "test_module_uninit.submodule", "UnInitClass"
+            ).retrieve()
+            self.assertEqual(
+                result.value,
+                42,
+                msg="Even with an unitialized submodule, the class value still be importable",
+            )
+        finally:
+            shutil.rmtree(test_pkg_dir)
+
+    def test_import_class_method(self):
+        """Test importing a method from a class."""
+        result = VersionInfo("pathlib", "Path.exists").retrieve()
+        from pathlib import Path
+
+        self.assertEqual(result, Path.exists)
+
+    def test_strict(self):
+        with self.assertRaises(ValueError):
+            VersionInfo("sys", version="not my python version").retrieve(strict=True)
+
+
+class TestRetrieveIntegration(unittest.TestCase):
+    """Integration tests for real-world scenarios."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.static_path = pathlib.Path(__file__).parent.parent / "static"
+        if str(self.static_path) not in sys.path:
+            sys.path.insert(0, str(self.static_path))
+
+    def tearDown(self):
+        """Clean up test environment."""
+        if str(self.static_path) in sys.path:
+            sys.path.remove(str(self.static_path))
+        keys_to_remove = [k for k in sys.modules if k.startswith("test_package")]
+        for key in keys_to_remove:
+            del sys.modules[key]
+
+    def test_complex_package_structure(self):
+        """Test with a complex package structure."""
+        # Create a test package structure
+        pkg_dir = self.static_path / "test_package_complex"
+        sub_pkg_dir = pkg_dir / "subpackage"
+        sub_pkg_dir.mkdir(parents=True, exist_ok=True)
+
+        (pkg_dir / "__init__.py").write_text(
+            "from .module1 import Class1\n__all__ = ['Class1']"
+        )
+        (sub_pkg_dir / "__init__.py").write_text("")
+
+        (pkg_dir / "module1.py").write_text(textwrap.dedent("""
+                class Class1:
+                    value = 'from_module1'
+                """).strip())
+
+        (sub_pkg_dir / "module2.py").write_text(textwrap.dedent("""
+                class Class2:
+                    value = 'from_module2'
+
+                    class NestedClass:
+                        nested_value = 'nested'
+                """).strip())
+
+        try:
+            result1 = VersionInfo("test_package_complex", "Class1").retrieve()
+            self.assertEqual(result1.value, "from_module1")
+
+            result2 = VersionInfo("test_package_complex.module1", "Class1").retrieve()
+            self.assertEqual(result2.value, "from_module1")
+
+            result3 = VersionInfo(
+                "test_package_complex.subpackage.module2", "Class2"
+            ).retrieve()
+            self.assertEqual(result3.value, "from_module2")
+
+            result4 = VersionInfo(
+                "test_package_complex.subpackage.module2", "Class2.NestedClass"
+            ).retrieve()
+            self.assertEqual(result4.nested_value, "nested")
+
+        finally:
+            shutil.rmtree(pkg_dir)
+
+    def test_circular_import_handling(self):
+        """Test that circular imports are handled gracefully."""
+        pkg_dir = self.static_path / "test_circular"
+        pkg_dir.mkdir(parents=True, exist_ok=True)
+
+        (pkg_dir / "__init__.py").write_text("")
+        (pkg_dir / "module_a.py").write_text(textwrap.dedent("""
+                from .module_b import ClassB
+
+                class ClassA:
+                    related = ClassB
+                    value = 'A'
+                """).strip())
+        (pkg_dir / "module_b.py").write_text(textwrap.dedent("""
+                class ClassB:
+                    value = 'B'
+
+                # Circular import:
+                from .module_a import ClassA
+                """).strip())
+
+        try:
+            with self.assertRaises(ImportError, msg="Circular imports never work"):
+                VersionInfo("test_circular.module_a", "ClassA").retrieve()
+
+        finally:
+            shutil.rmtree(pkg_dir)
 
 
 if __name__ == "__main__":
