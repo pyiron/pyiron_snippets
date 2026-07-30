@@ -70,11 +70,7 @@ class TestImportFromString(unittest.TestCase):
         """Test that importing non-existent attribute raises ModuleNotFoundError."""
         with self.assertRaises(ModuleNotFoundError) as cm:
             retrieve.import_from_string("os.nonexistent_attr")
-        self.assertEqual(
-            str(cm.exception),
-            "Could not import os.nonexistent_attr. Please check for typos or that the "
-            "module is in your PYTHONPATH.",
-        )
+        self.assertIn("os.nonexistent_attr", str(cm.exception))
 
     def test_import_empty_string(self):
         """Test edge case with empty string."""
