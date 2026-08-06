@@ -96,7 +96,7 @@ class DirectoryObject:
             raise TypeError(
                 "directory must be str, pathlib.Path, DirectoryObject, or None"
             )
-        if generate_unique_directory:
+        if generate_unique_directory and directory is not None:
             path = path / f"data_{uuid.uuid4().hex}"
         if protected is None:
             protected = path.exists()
