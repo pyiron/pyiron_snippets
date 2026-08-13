@@ -171,7 +171,7 @@ class VersionInfo:
             The imported object.
         """
         try:
-            obj = importlib.import_module(self.module)
+            importlib.import_module(self.module)
             if strict:
                 actual_version = get_version(
                     self.module, version_scraping=version_scraping
@@ -190,18 +190,98 @@ class VersionInfo:
                 f"with `import sys; print(sys.path)`."
             ) from e
 
-        for k in (self.qualname or "").split("."):
-            if k == "":
-                break
-            try:
-                obj = getattr(obj, k)
-            except AttributeError:
-                # Try importing as a submodule
-                # This can be necessary of an __init__.py is empty and nothing else has
-                # referenced the module yet
-                current_path = f"{obj.__name__}.{k}"
-                obj = importlib.import_module(current_path)
-        return obj
+        return _import_from_string(self.fully_qualified_name)
+
+
+def _import_from_string(library_path: str) -> object:
+    """
+    Import an object using a string of its python library location.
+
+    Args:
+        library_path (str): The full module path to the desired object.
+
+    Returns:
+        (object): The imported object.
+
+    Example:
+        >>> from pyiron_snippets import retrieve
+        >>> ThreadPoolExecutor = retrieve.import_from_string(
+        ...     "concurrent.futures.ThreadPoolExecutor"
+        ... )
+        >>> with ThreadPoolExecutor(max_workers=2) as executor:
+        ...     future = executor.submit(pow, 2, 3)
+        ...     print(future.result())
+        8
+
+    """
+    if (not isinstance(library_path, str)) or len(library_path) == 0:
+        raise ValueError(
+            f"Expected a non-empty string, got '{library_path}'  of type {type(library_path)} instead."
+        )
+
+    try:
+        obj = _load_from_left(library_path)
+    except ModuleNotFoundError as e:
+        try:
+            obj = _load_from_right(library_path)
+        except (AttributeError, ModuleNotFoundError):
+            raise ModuleNotFoundError(
+                f"Could not import {library_path}. Please check for typos or that the "
+                f"module is in your PYTHONPATH."
+            ) from e
+
+    return obj
+
+
+def _load_from_right(library_path: str) -> object:
+    split_path = library_path.rsplit(".", 1)
+    if len(split_path) == 1:
+        module_name, path = split_path[0], ""
+    else:
+        module_name, path = split_path
+
+    try:
+        obj = importlib.import_module(module_name)
+    except ModuleNotFoundError as e:
+        raise ModuleNotFoundError(
+            f"Could not import module '{module_name}' while resolving {library_path}. The most likely "
+            f"causes of this problem are a typo, or that the module is not yet in your "
+            f"system's PYTHONPATH. The latter can be checked from inside python with "
+            f"`import sys; print(sys.path)`."
+        ) from e
+
+    return getattr(obj, path) if path else obj
+
+
+def _load_from_left(library_path: str) -> object:
+    split_path = library_path.split(".", 1)
+    if len(split_path) == 1:
+        module_name, path = split_path[0], ""
+    else:
+        module_name, path = split_path
+
+    try:
+        obj = importlib.import_module(module_name)
+    except ModuleNotFoundError as e:
+        raise ModuleNotFoundError(
+            f"The topmost entry of {library_path} could not be found. The most likely "
+            f"causes of this problem are a typo, or that the module is not yet in your "
+            f"system's PYTHONPATH. The latter can be checked from inside python with "
+            f"`import sys; print(sys.path)`."
+        ) from e
+
+    for k in path.split("."):
+        if k == "":
+            break
+        try:
+            obj = getattr(obj, k)
+        except AttributeError:
+            # Try importing as a submodule
+            # This can be necessary of an __init__.py is empty and nothing else has
+            # referenced the module yet
+            current_path = f"{obj.__name__}.{k}"
+            obj = importlib.import_module(current_path)
+    return obj
 
 
 @dataclasses.dataclass(frozen=True)
