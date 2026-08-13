@@ -19,6 +19,7 @@ from pyiron_snippets.versions import (
     VersionInfo,
     VersionInfoFactory,
     VersionScrapingMap,
+    _import_from_string,
     get_module,
     get_qualname,
     get_version,
@@ -754,7 +755,7 @@ class TestFullyQualifiedName(unittest.TestCase):
         self.assertEqual(info.fully_qualified_name, "os")
 
 
-class TestImportFromString(unittest.TestCase):
+class TestRetrieve(unittest.TestCase):
     """Test cases for import_from_string function."""
 
     def setUp(self):
@@ -955,6 +956,119 @@ class TestRetrieveIntegration(unittest.TestCase):
 
         finally:
             shutil.rmtree(pkg_dir)
+
+
+class TestImportFromString(unittest.TestCase):
+    """Test cases for _import_from_string function."""
+
+    def setUp(self):
+        """Add static test files to path for testing."""
+        self.static_path = pathlib.Path(__file__).parent.parent / "static"
+        if str(self.static_path) not in sys.path:
+            sys.path.insert(0, str(self.static_path))
+
+    def tearDown(self):
+        """Clean up sys.path and modules."""
+        if str(self.static_path) in sys.path:
+            sys.path.remove(str(self.static_path))
+        keys_to_remove = [k for k in sys.modules if k.startswith("test_module")]
+        for key in keys_to_remove:
+            del sys.modules[key]
+
+    def test_import_builtin_module(self):
+        """Test importing a standard library module."""
+        result = _import_from_string("os")
+        import os
+
+        self.assertIs(result, os)
+
+    def test_import_builtin_function(self):
+        """Test importing a function from standard library."""
+        result = _import_from_string("os.path.join")
+        from os.path import join
+
+        self.assertIs(result, join)
+
+    def test_import_builtin_class(self):
+        """Test importing a class from standard library."""
+        result = _import_from_string("pathlib.Path")
+        from pathlib import Path
+
+        self.assertIs(result, Path)
+
+    def test_import_nested_attribute(self):
+        """Test importing deeply nested attributes."""
+        result = _import_from_string("unittest.TestCase.assertEqual")
+        self.assertEqual(result, unittest.TestCase.assertEqual)
+
+    def test_import_from_pyiron_snippets(self):
+        """Test importing from the pyiron_snippets package itself."""
+        result = _import_from_string("pyiron_snippets.singleton.Singleton")
+        self.assertIs(result, singleton.Singleton)
+
+    def test_import_nonexistent_module(self):
+        """Test that importing non-existent module raises ModuleNotFoundError."""
+        with self.assertRaises(ModuleNotFoundError) as cm:
+            _import_from_string("nonexistent_module")
+        self.assertIn("nonexistent_module", str(cm.exception))
+        self.assertIn("PYTHONPATH", str(cm.exception))
+
+    def test_import_nonexistent_attribute(self):
+        """Test that importing non-existent attribute raises ModuleNotFoundError."""
+        with self.assertRaises(ModuleNotFoundError) as cm:
+            _import_from_string("os.nonexistent_attr")
+        self.assertIn("os.nonexistent_attr", str(cm.exception))
+
+    def test_import_empty_string(self):
+        """Test edge case with empty string."""
+        with self.assertRaises(ValueError):
+            _import_from_string("")
+
+    def test_import_single_name(self):
+        """Test importing just a module name without any dots."""
+        result = _import_from_string("sys")
+        import sys
+
+        self.assertIs(result, sys)
+
+    def test_import_from_uninitialized_submodule(self):
+        """Test importing from a submodule that hasn't been initialized yet."""
+        test_pkg_dir = self.static_path / "test_module_uninit"
+        test_pkg_dir.mkdir(parents=True, exist_ok=True)
+
+        (test_pkg_dir / "__init__.py").write_text("")
+
+        submodule_content = textwrap.dedent("""
+            class UnInitClass:
+                value = 42
+            """).strip()
+        (test_pkg_dir / "submodule.py").write_text(submodule_content)
+
+        try:
+            uninitialized = importlib.import_module("test_module_uninit")
+            self.assertNotIn("submodule", dir(uninitialized))
+            result = _import_from_string("test_module_uninit.submodule.UnInitClass")
+            self.assertEqual(
+                result.value,
+                42,
+                msg="Even with an unitialized submodule, the class value still be importable",
+            )
+        finally:
+            shutil.rmtree(test_pkg_dir)
+
+    def test_import_class_method(self):
+        """Test importing a method from a class."""
+        result = _import_from_string("pathlib.Path.exists")
+        from pathlib import Path
+
+        self.assertEqual(result, Path.exists)
+
+    def test_nonsense(self):
+        with self.assertRaises(ValueError):
+            _import_from_string("")
+
+        with self.assertRaises(ValueError):
+            _import_from_string(42)
 
 
 if __name__ == "__main__":
