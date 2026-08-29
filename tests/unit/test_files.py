@@ -23,6 +23,19 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(str(directory.path).startswith("data"))
         self.assertEqual(len(str(directory.path)), 37)
 
+    def test_directory_invalid_type_raises(self):
+        with self.assertRaises(TypeError):
+            DirectoryObject(directory=42)
+
+    def test_generate_unique_directory_no_nesting_when_directory_is_none(self):
+        directory = DirectoryObject(directory=None, generate_unique_directory=True)
+        try:
+            # Path should have only one component (no nested UUID subdirectory)
+            self.assertEqual(len(directory.path.parts), 1)
+            self.assertTrue(str(directory.path).startswith("data_"))
+        finally:
+            directory.delete()
+
     def test_protected(self):
         directory = DirectoryObject("protected", protected=True)
         self.assertTrue(directory._protected)

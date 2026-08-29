@@ -68,7 +68,7 @@ class DirectoryObject:
 
     def __init__(
         self,
-        directory: str | Path | DirectoryObject = ".",
+        directory: str | Path | DirectoryObject | None = None,
         generate_unique_directory: bool | None = None,
         protected: bool | None = None,
     ):
@@ -76,24 +76,30 @@ class DirectoryObject:
         Initialize a DirectoryObject.
 
         Args:
-            directory (str | Path | DirectoryObject): The directory path or
-                DirectoryObject instance.
+            directory (str | Path | DirectoryObject | None): The directory path or
+                DirectoryObject instance. If None, a unique directory is created.
             generate_unique_directory (bool | None): If True, generates a unique
-                directory name, otherwise it still generates a unique name if
-                the directory is "." and this parameter is None.
+                subdirectory name under ``directory``.
             protected (bool | None): If True, prevents deletion of the
                 directory object on garbage collection. If None, it defaults to
                 True if the directory already exists.
         """
-        if isinstance(directory, str):
+        if directory is None:
+            path = Path(f"data_{uuid.uuid4().hex}")
+        elif isinstance(directory, str):
             path = Path(directory)
         elif isinstance(directory, Path):
             path = directory
         elif isinstance(directory, DirectoryObject):
             path = directory.path
+        else:
+            raise TypeError(
+                "directory must be str, pathlib.Path, DirectoryObject, or None"
+            )
         if (
-            directory == "." and generate_unique_directory is None
-        ) or generate_unique_directory:
+            generate_unique_directory
+            or (directory == "." and generate_unique_directory is None)
+        ) and directory is not None:
             path = path / f"data_{uuid.uuid4().hex}"
         if protected is None:
             protected = path.exists()
