@@ -11,7 +11,7 @@ on:
 
 jobs:
   hatchling-release:
-    uses: pyiron/actions/.github/workflows/hatch-release.yml@actions-4.0.8
+    uses: pyiron/actions/.github/workflows/hatch-release.yml@actions-4.3.0
     secrets: inherit
     with:
       publish-to-pypi: ${{ github.event_name == 'release' && github.event.action == 'published' }}
