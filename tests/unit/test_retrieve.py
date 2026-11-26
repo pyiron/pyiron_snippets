@@ -97,6 +97,9 @@ class TestImportFromString(unittest.TestCase):
             """).strip()
         (test_pkg_dir / "submodule.py").write_text(submodule_content)
 
+        # Let the import system see the files written above
+        importlib.invalidate_caches()
+
         try:
             uninitialized = importlib.import_module("test_module_uninit")
             self.assertNotIn("submodule", dir(uninitialized))
@@ -258,6 +261,9 @@ class TestIntegrationScenarios(unittest.TestCase):
                         nested_value = 'nested'
                 """).strip())
 
+        # Let the import system see the files written above
+        importlib.invalidate_caches()
+
         try:
             result1 = retrieve.import_from_string("test_package_complex.Class1")
             self.assertEqual(result1.value, "from_module1")
@@ -298,6 +304,9 @@ class TestIntegrationScenarios(unittest.TestCase):
                 # Circular import:
                 from .module_a import ClassA
                 """).strip())
+
+        # Let the import system see the files written above
+        importlib.invalidate_caches()
 
         try:
             with self.assertRaises(ImportError, msg="Circular imports never work"):
